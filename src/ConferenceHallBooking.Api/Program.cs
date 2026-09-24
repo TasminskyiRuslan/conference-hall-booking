@@ -1,3 +1,5 @@
+using ConferenceHallBooking.Application.Interfaces;
+
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddApplication();
@@ -8,6 +10,13 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
+
+if (app.Configuration.GetValue("Database:AutoMigrateAndSeed", false))
+{
+    using var scope = app.Services.CreateScope();
+    var initializer = scope.ServiceProvider.GetRequiredService<IDbInitializer>();
+    await initializer.SeedAsync();
+}
 
 if (app.Environment.IsDevelopment())
 {
