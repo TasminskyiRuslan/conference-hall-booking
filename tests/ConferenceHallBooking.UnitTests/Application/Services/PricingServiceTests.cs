@@ -15,7 +15,7 @@ public class PricingServiceTests
     {
         var repository = Substitute.For<IPricingRuleRepository>();
         var domainRules = rules
-            .Select((r, index) => new PricingRule(r.StartTime, r.EndTime, r.Multiplier, index))
+            .Select(r => new PricingRule(r.StartTime, r.EndTime, r.Multiplier))
             .ToList();
 
         repository.GetOrderedAsync(Arg.Any<CancellationToken>())
@@ -183,6 +183,8 @@ public class PricingServiceTests
 
         var result = await service.CalculatePriceAsync(100m, null, Date(1, 12), Date(1, 13));
 
+        // Non-overlapping rules are enforced at seed time; if data still overlaps,
+        // the earliest StartTime wins because rules are ordered by StartTime.
         result.HallCost.Should().Be(150m);
     }
 

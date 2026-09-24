@@ -17,10 +17,5 @@ public class PricingRuleConfiguration : IEntityTypeConfiguration<PricingRule>
 
         builder.Property(r => r.Multiplier)
             .HasPrecision(18, 2);
-
-        builder.Property(r => r.SortOrder)
-            .IsRequired();
-
-        builder.HasIndex(r => r.SortOrder);
     }
 }

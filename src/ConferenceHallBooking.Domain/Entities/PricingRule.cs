@@ -4,8 +4,8 @@ namespace ConferenceHallBooking.Domain.Entities;
 
 /// <summary>
 /// Time-of-day pricing rule for the pricing service.
-/// First match wins by <see cref="SortOrder"/>.
 /// Window is inclusive of start and exclusive of end.
+/// Rules must not overlap; validated when seeding configuration.
 /// </summary>
 public class PricingRule
 {
@@ -21,16 +21,13 @@ public class PricingRule
     /// <summary>Multiplier applied to the base hourly rate.</summary>
     public decimal Multiplier { get; private set; }
 
-    /// <summary>Evaluation order ascending; lower values match first.</summary>
-    public int SortOrder { get; private set; }
-
     private PricingRule() { }
 
     /// <summary>
     /// Creates a pricing rule.
-    /// Throws <see cref="InvalidEntityFieldException"/> on invalid input.
+    /// Throws InvalidEntityFieldException on invalid input.
     /// </summary>
-    public PricingRule(TimeOnly startTime, TimeOnly endTime, decimal multiplier, int sortOrder)
+    public PricingRule(TimeOnly startTime, TimeOnly endTime, decimal multiplier)
     {
         if (endTime <= startTime)
         {
@@ -48,6 +45,5 @@ public class PricingRule
         StartTime = startTime;
         EndTime = endTime;
         Multiplier = multiplier;
-        SortOrder = sortOrder;
     }
 }

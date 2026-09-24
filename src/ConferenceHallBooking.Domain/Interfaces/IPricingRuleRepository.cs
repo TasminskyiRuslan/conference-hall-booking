@@ -8,7 +8,7 @@ namespace ConferenceHallBooking.Domain.Interfaces;
 public interface IPricingRuleRepository
 {
     /// <summary>
-    /// Returns all pricing rules ordered by <see cref="PricingRule.SortOrder"/> (first-match-wins).
+    /// Returns all pricing rules ordered by start time.
     /// </summary>
     Task<IReadOnlyList<PricingRule>> GetOrderedAsync(CancellationToken cancellationToken = default);
 }
