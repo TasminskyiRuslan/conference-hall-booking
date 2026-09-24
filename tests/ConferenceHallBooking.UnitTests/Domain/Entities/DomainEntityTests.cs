@@ -97,6 +97,17 @@ public class DomainEntityTests
     }
 
     [Fact]
+    public void Hall_Update_WithWhitespaceName_ShouldThrowInvalidEntityFieldException()
+    {
+        var hall = new Hall("Conference Room A", 50, 100m);
+
+        var act = () => hall.Update("   ", 50, 100m);
+
+        act.Should().Throw<InvalidEntityFieldException>()
+            .Which.FieldName.Should().Be(nameof(Hall.Name));
+    }
+
+    [Fact]
     public void Hall_AddOption_ShouldAddToHallOptions()
     {
         var hall = new Hall("Conference Room A", 50, 100m);
@@ -286,6 +297,22 @@ public class DomainEntityTests
     }
 
     [Fact]
+    public void Booking_WithZeroHallCostAndPaidOptions_ShouldBeValidWhenTotalMatches()
+    {
+        var hall = new Hall("Hall", 50, 100m);
+        var user = new User("owner@email.com", "hash", "Owner");
+        var startTime = DateTimeOffset.UtcNow;
+        var endTime = startTime.AddHours(2);
+        var options = new List<BookingOption> { new(new Option("Premium", 200m), 200m) };
+
+        var booking = new Booking(hall, user, startTime, endTime, 0m, 200m, options);
+
+        booking.HallCost.Should().Be(0m);
+        booking.TotalPrice.Should().Be(200m);
+        booking.BookingOptions.Should().HaveCount(1);
+    }
+
+    [Fact]
     public void Booking_Constructor_ShouldSetHallAndUser()
     {
         var hall = new Hall("Hall", 50, 100m);
@@ -331,6 +358,14 @@ public class DomainEntityTests
 
         act.Should().Throw<InvalidEntityFieldException>()
             .Which.FieldName.Should().Be(nameof(Option.Price));
+    }
+
+    [Fact]
+    public void Option_Constructor_WithZeroPrice_ShouldBeAllowed()
+    {
+        var option = new Option("Free add-on", 0m);
+
+        option.Price.Should().Be(0m);
     }
 
     [Fact]

@@ -388,6 +388,29 @@ public class HallHandlerTests
     }
 
     [Fact]
+    public async Task UpdateHall_WhenNameUnchanged_ShouldNotCheckNameUniqueness()
+    {
+        var handler = new UpdateHallCommandHandler(_hallRepository, _optionRepository, _bookingRepository, _unitOfWork);
+        var hallId = Guid.NewGuid();
+        var existingHall = new Hall("Same Name", 50, 100m);
+        var command = new UpdateHallCommand(hallId, "Same Name", 60, 120m, []);
+
+        _hallRepository.GetByIdAsync(hallId, Arg.Any<CancellationToken>())
+            .Returns(existingHall);
+
+        var result = await handler.Handle(command, CancellationToken.None);
+
+        result.Should().NotBeNull();
+        result.Name.Should().Be("Same Name");
+        existingHall.Capacity.Should().Be(60);
+
+        await _hallRepository.DidNotReceive().ExistsByNameAsync(
+            Arg.Any<string>(),
+            Arg.Any<CancellationToken>());
+        await _unitOfWork.Received(1).SaveChangesAsync(Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
     public async Task UpdateHall_WhenNewNameAlreadyExists_ShouldThrowHallNameAlreadyExistsException()
     {
         var handler = new UpdateHallCommandHandler(_hallRepository, _optionRepository, _bookingRepository, _unitOfWork);
