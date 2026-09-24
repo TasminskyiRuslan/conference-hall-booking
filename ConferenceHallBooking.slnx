@@ -1,0 +1,7 @@
+<Solution>
+  <Project Path="src/ConferenceHallBooking.Api/ConferenceHallBooking.Api.csproj" />
+  <Project Path="src/ConferenceHallBooking.Application/ConferenceHallBooking.Application.csproj" />
+  <Project Path="src/ConferenceHallBooking.Domain/ConferenceHallBooking.Domain.csproj" />
+  <Project Path="src/ConferenceHallBooking.Infrastructure/ConferenceHallBooking.Infrastructure.csproj" />
+  <Project Path="tests/ConferenceHallBooking.UnitTests/ConferenceHallBooking.UnitTests.csproj" />
+</Solution>
