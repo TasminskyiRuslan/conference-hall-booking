@@ -1,0 +1,52 @@
+using ConferenceHallBooking.Domain.Exceptions;
+
+namespace ConferenceHallBooking.Domain.Entities;
+
+/// <summary>
+/// Time-of-day pricing rule for <c>PricingService</c>.
+/// First match wins by <see cref="SortOrder"/>. Window: [StartTime, EndTime).
+/// </summary>
+public class PricingRule
+{
+    /// <summary>Unique identifier.</summary>
+    public Guid Id { get; private set; }
+
+    /// <summary>Inclusive window start.</summary>
+    public TimeOnly StartTime { get; private set; }
+
+    /// <summary>Exclusive window end.</summary>
+    public TimeOnly EndTime { get; private set; }
+
+    /// <summary>Multiplier for the base hourly rate (e.g. 1.15 = +15%).</summary>
+    public decimal Multiplier { get; private set; }
+
+    /// <summary>Evaluation order ascending; lower values match first.</summary>
+    public int SortOrder { get; private set; }
+
+    private PricingRule() { }
+
+    /// <summary>
+    /// Creates a pricing rule.
+    /// Throws <see cref="InvalidEntityFieldException"/> on invalid input.
+    /// </summary>
+    public PricingRule(TimeOnly startTime, TimeOnly endTime, decimal multiplier, int sortOrder)
+    {
+        if (endTime <= startTime)
+        {
+            throw new InvalidEntityFieldException(
+                nameof(PricingRule), nameof(EndTime), "end time must be greater than start time");
+        }
+
+        if (multiplier <= 0)
+        {
+            throw new InvalidEntityFieldException(
+                nameof(PricingRule), nameof(Multiplier), "multiplier must be greater than zero");
+        }
+
+        Id = Guid.NewGuid();
+        StartTime = startTime;
+        EndTime = endTime;
+        Multiplier = multiplier;
+        SortOrder = sortOrder;
+    }
+}
