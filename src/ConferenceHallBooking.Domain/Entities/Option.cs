@@ -2,7 +2,7 @@ using ConferenceHallBooking.Domain.Exceptions;
 
 namespace ConferenceHallBooking.Domain.Entities;
 
-/// <summary>Bookable service option (e.g., projector, Wi-Fi).</summary>
+/// <summary>Bookable service option with a fixed price.</summary>
 public class Option
 {
     /// <summary>Unique identifier.</summary>

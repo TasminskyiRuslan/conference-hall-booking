@@ -3,8 +3,9 @@ using ConferenceHallBooking.Domain.Exceptions;
 namespace ConferenceHallBooking.Domain.Entities;
 
 /// <summary>
-/// Time-of-day pricing rule for <c>PricingService</c>.
-/// First match wins by <see cref="SortOrder"/>. Window: [StartTime, EndTime).
+/// Time-of-day pricing rule for the pricing service.
+/// First match wins by <see cref="SortOrder"/>.
+/// Window is inclusive of start and exclusive of end.
 /// </summary>
 public class PricingRule
 {
@@ -17,7 +18,7 @@ public class PricingRule
     /// <summary>Exclusive window end.</summary>
     public TimeOnly EndTime { get; private set; }
 
-    /// <summary>Multiplier for the base hourly rate (e.g. 1.15 = +15%).</summary>
+    /// <summary>Multiplier applied to the base hourly rate.</summary>
     public decimal Multiplier { get; private set; }
 
     /// <summary>Evaluation order ascending; lower values match first.</summary>

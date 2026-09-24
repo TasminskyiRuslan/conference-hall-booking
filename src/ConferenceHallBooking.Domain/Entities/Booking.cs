@@ -4,7 +4,7 @@ namespace ConferenceHallBooking.Domain.Entities;
 
 /// <summary>
 /// Confirmed booking of a hall for a time slot.
-/// Stores pricing snapshot from the pricing service; owned by the creating user.
+/// Stores a pricing snapshot; owned by the creating user.
 /// </summary>
 public class Booking
 {
