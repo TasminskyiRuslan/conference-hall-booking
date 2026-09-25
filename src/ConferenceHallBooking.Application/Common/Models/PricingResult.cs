@@ -1,4 +1,4 @@
-namespace ConferenceHallBooking.Application.DTOs.Bookings;
+namespace ConferenceHallBooking.Application.Common.Models;
 
 /// <summary>
 /// Calculated pricing breakdown for a booking.

@@ -1,4 +1,4 @@
-using ConferenceHallBooking.Application.DTOs.Bookings;
+using ConferenceHallBooking.Application.Common.Models;
 
 namespace ConferenceHallBooking.Application.Interfaces.Bookings;
 

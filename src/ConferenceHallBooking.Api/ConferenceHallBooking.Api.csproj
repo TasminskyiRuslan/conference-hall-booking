@@ -19,10 +19,4 @@
     <ProjectReference Include="..\ConferenceHallBooking.Infrastructure\ConferenceHallBooking.Infrastructure.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Authorization\" />
-    <Folder Include="ExceptionHandlers\" />
-    <Folder Include="Controllers\" />
-  </ItemGroup>
-
 </Project>
