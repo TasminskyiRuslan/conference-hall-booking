@@ -13,10 +13,12 @@ public class ReportHandlerTests
     private readonly IBookingRepository _bookingRepository = Substitute.For<IBookingRepository>();
 
     private readonly GetRevenueReportHandler _revenueHandler;
+    private readonly GetBookingSummaryReportHandler _summaryHandler;
 
     public ReportHandlerTests()
     {
         _revenueHandler = new GetRevenueReportHandler(_bookingRepository);
+        _summaryHandler = new GetBookingSummaryReportHandler(_bookingRepository);
     }
 
     #region Revenue Report
@@ -112,9 +114,109 @@ public class ReportHandlerTests
 
     #endregion
 
+    #region Booking Summary Report
+
+    [Fact]
+    public async Task GetBookingSummaryReportHandler_WithBookings_ShouldReturnCorrectSummary()
+    {
+        var hall = new Hall("Hall A", 50, 1000m);
+        var from = new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero);
+        var to = new DateTimeOffset(2026, 2, 1, 0, 0, 0, TimeSpan.Zero);
+
+        var bookings = new List<Booking>
+        {
+            NewBooking(hall, from.AddDays(1).AddHours(10), from.AddDays(1).AddHours(13), 3000m),
+            NewBooking(hall, from.AddDays(5).AddHours(10), from.AddDays(5).AddHours(12), 2000m)
+        };
+        _bookingRepository.GetByDateRangeAsync(from, to, Arg.Any<CancellationToken>())
+            .Returns(bookings);
+
+        var report = await _summaryHandler.Handle(
+            new GetBookingSummaryReportQuery(from, to), CancellationToken.None);
+
+        report.TotalBookings.Should().Be(2);
+        report.TotalRevenue.Should().Be(5000m);
+        report.AverageBookingDurationHours.Should().Be(2.5m);
+        report.AverageBookingRevenue.Should().Be(2500m);
+    }
+
+    [Fact]
+    public async Task GetBookingSummaryReportHandler_WithNoBookings_ShouldReturnZeros()
+    {
+        var from = new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero);
+        var to = new DateTimeOffset(2026, 2, 1, 0, 0, 0, TimeSpan.Zero);
+        _bookingRepository.GetByDateRangeAsync(from, to, Arg.Any<CancellationToken>())
+            .Returns(new List<Booking>());
+
+        var report = await _summaryHandler.Handle(
+            new GetBookingSummaryReportQuery(from, to), CancellationToken.None);
+
+        report.TotalBookings.Should().Be(0);
+        report.TotalRevenue.Should().Be(0);
+        report.AverageBookingDurationHours.Should().Be(0);
+        report.AverageBookingRevenue.Should().Be(0);
+        report.PopularTimeSlots.Should().BeEmpty();
+        report.PopularOptions.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task GetBookingSummaryReportHandler_ShouldReturnPopularTimeSlots()
+    {
+        var hall = new Hall("Hall A", 50, 1000m);
+        var from = new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero);
+        var to = new DateTimeOffset(2026, 2, 1, 0, 0, 0, TimeSpan.Zero);
+
+        var bookings = new List<Booking>
+        {
+            NewBooking(hall, from.AddDays(1).AddHours(10), from.AddDays(1).AddHours(11), 1000m),
+            NewBooking(hall, from.AddDays(2).AddHours(10), from.AddDays(2).AddHours(11), 1000m),
+            NewBooking(hall, from.AddDays(3).AddHours(10), from.AddDays(3).AddHours(11), 1000m),
+            NewBooking(hall, from.AddDays(4).AddHours(14), from.AddDays(4).AddHours(15), 1000m)
+        };
+        _bookingRepository.GetByDateRangeAsync(from, to, Arg.Any<CancellationToken>())
+            .Returns(bookings);
+
+        var report = await _summaryHandler.Handle(
+            new GetBookingSummaryReportQuery(from, to), CancellationToken.None);
+
+        report.PopularTimeSlots.First().Hour.Should().Be(10);
+        report.PopularTimeSlots.First().BookingCount.Should().Be(3);
+    }
+
+    [Fact]
+    public async Task GetBookingSummaryReportHandler_ShouldReturnPopularOptions()
+    {
+        var hall = new Hall("Hall A", 50, 1000m);
+        var projector = new Option("Projector", 50m);
+        var user = NewUser();
+        var from = new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero);
+        var to = new DateTimeOffset(2026, 2, 1, 0, 0, 0, TimeSpan.Zero);
+
+        var bookings = new List<Booking>
+        {
+            new(hall, user, from.AddDays(1), from.AddDays(1).AddHours(2), 100m, 150m,
+                [new BookingOption(projector, 50m)]),
+            new(hall, user, from.AddDays(2), from.AddDays(2).AddHours(2), 100m, 150m,
+                [new BookingOption(projector, 50m)])
+        };
+        _bookingRepository.GetByDateRangeAsync(from, to, Arg.Any<CancellationToken>())
+            .Returns(bookings);
+
+        var report = await _summaryHandler.Handle(
+            new GetBookingSummaryReportQuery(from, to), CancellationToken.None);
+
+        report.PopularOptions.Should().HaveCount(1);
+        report.PopularOptions.First().OptionId.Should().Be(projector.Id);
+        report.PopularOptions.First().Name.Should().Be("Projector");
+        report.PopularOptions.First().BookingCount.Should().Be(2);
+    }
+
+    #endregion
+
+    private static User NewUser() => new("tester@example.com", "fake-hash", "Tester");
+
     private static Booking NewBooking(Hall hall, DateTimeOffset start, DateTimeOffset end, decimal price)
     {
-        var user = new User("tester@example.com", "fake-hash", "Tester");
-        return new Booking(hall, user, start, end, price, price);
+        return new Booking(hall, NewUser(), start, end, price, price);
     }
 }
