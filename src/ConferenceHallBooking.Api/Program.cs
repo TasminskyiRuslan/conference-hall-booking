@@ -1,4 +1,5 @@
 using System.Text;
+using ConferenceHallBooking.Api.ExceptionHandlers;
 using ConferenceHallBooking.Application.Configuration;
 using ConferenceHallBooking.Application.Interfaces;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -8,6 +9,9 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
+
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+builder.Services.AddProblemDetails();
 
 var jwtSettings = builder.Configuration.GetSection(JwtSettings.SectionName).Get<JwtSettings>() ?? new JwtSettings();
 
@@ -53,6 +57,8 @@ if (app.Configuration.GetValue("Database:AutoMigrateAndSeed", false))
     var initializer = scope.ServiceProvider.GetRequiredService<IDbInitializer>();
     await initializer.SeedAsync();
 }
+
+app.UseExceptionHandler();
 
 if (app.Environment.IsDevelopment())
 {
