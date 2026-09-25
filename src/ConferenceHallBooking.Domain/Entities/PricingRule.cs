@@ -22,7 +22,9 @@ public class PricingRule
     /// <summary>Multiplier applied to the base hourly rate.</summary>
     public decimal Multiplier { get; private set; }
 
-    private PricingRule() { }
+    private PricingRule()
+    {
+    }
 
     /// <summary>
     /// Creates a pricing rule.

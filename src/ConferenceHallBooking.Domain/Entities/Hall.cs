@@ -30,7 +30,9 @@ public class Hall
     /// <summary>All bookings for this hall.</summary>
     public IReadOnlyCollection<Booking> Bookings => _bookings;
 
-    private Hall() { }
+    private Hall()
+    {
+    }
 
     /// <summary>Creates a hall with the given name, capacity and hourly rate.</summary>
     public Hall(string name, int capacity, decimal baseHourlyRate)

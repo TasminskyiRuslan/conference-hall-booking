@@ -8,7 +8,9 @@ public class NotFoundException : BusinessRuleException
 {
     /// <summary>Creates a not-found error naming the missing entity.</summary>
     public NotFoundException(string message)
-        : base(message, "NOT_FOUND") { }
+        : base(message, "NOT_FOUND")
+    {
+    }
 }
 
 /// <summary>

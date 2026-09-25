@@ -19,7 +19,9 @@ public class Option
     /// <summary>Halls that offer this option.</summary>
     public IReadOnlyCollection<HallOption> HallOptions => _hallOptions;
 
-    private Option() { }
+    private Option()
+    {
+    }
 
     /// <summary>Creates a bookable service option with its price.</summary>
     public Option(string name, decimal price)

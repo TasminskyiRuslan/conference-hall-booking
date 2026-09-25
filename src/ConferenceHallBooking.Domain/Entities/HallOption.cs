@@ -17,7 +17,9 @@ public class HallOption
     /// <summary>Navigation property to the service option.</summary>
     public Option Option { get; private set; } = null!;
 
-    private HallOption() { }
+    private HallOption()
+    {
+    }
 
     /// <summary>Links an option that a hall offers.</summary>
     public HallOption(Option option)

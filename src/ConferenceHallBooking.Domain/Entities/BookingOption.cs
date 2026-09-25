@@ -20,7 +20,9 @@ public class BookingOption
     /// <summary>Option price frozen at booking time.</summary>
     public decimal PriceAtBooking { get; private set; }
 
-    private BookingOption() { }
+    private BookingOption()
+    {
+    }
 
     /// <summary>Links an option to a booking with its price frozen at booking time.</summary>
     public BookingOption(Option option, decimal priceAtBooking)

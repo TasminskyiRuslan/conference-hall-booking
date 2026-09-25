@@ -70,4 +70,6 @@ app.MapControllers();
 app.Run();
 
 /// <summary>Exposes the entry point to WebApplicationFactory-based integration tests.</summary>
-public partial class Program { }
+public partial class Program
+{
+}

@@ -46,7 +46,9 @@ public class Booking
     /// </summary>
     public IReadOnlyCollection<BookingOption> BookingOptions => _bookingOptions;
 
-    private Booking() { }
+    private Booking()
+    {
+    }
 
     /// <summary>
     /// Creates a booking from a pricing breakdown.
