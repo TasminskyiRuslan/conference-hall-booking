@@ -1,4 +1,5 @@
 using ConferenceHallBooking.Application.Interfaces;
+using ConferenceHallBooking.Domain.Common;
 using ConferenceHallBooking.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -14,6 +15,8 @@ public class DbInitializer(
     IConfiguration configuration,
     ILogger<DbInitializer> logger) : IDbInitializer
 {
+    private const string AdminSeedSection = "AdminSeed";
+
     public async Task SeedAsync(CancellationToken cancellationToken = default)
     {
         try
@@ -21,6 +24,7 @@ public class DbInitializer(
             logger.LogInformation("Applying pending database migrations...");
             await context.Database.MigrateAsync(cancellationToken);
 
+            await SeedAdminAsync(cancellationToken);
             await SeedPricingRulesAsync(cancellationToken);
             await SeedHallsAndOptionsAsync(cancellationToken);
         }
@@ -97,6 +101,34 @@ public class DbInitializer(
         await context.SaveChangesAsync(cancellationToken);
 
         logger.LogInformation("Halls and options seeded successfully.");
+    }
+
+    private async Task SeedAdminAsync(CancellationToken cancellationToken)
+    {
+        var email = configuration[$"{AdminSeedSection}:Email"];
+        var password = configuration[$"{AdminSeedSection}:Password"];
+
+        if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(password))
+        {
+            logger.LogWarning(
+                "Admin user was not created. Provide {Section}:Email and {Section}:Password (e.g. via environment variables).",
+                AdminSeedSection,
+                AdminSeedSection);
+            return;
+        }
+
+        if (await context.Users.AnyAsync(u => u.Email == email, cancellationToken))
+        {
+            return;
+        }
+
+        var passwordHash = BCrypt.Net.BCrypt.HashPassword(password);
+        var admin = new User(email, passwordHash, "Administrator", UserRole.Admin);
+
+        context.Users.Add(admin);
+        await context.SaveChangesAsync(cancellationToken);
+
+        logger.LogInformation("Admin user '{Email}' seeded successfully.", email);
     }
 
     private sealed record PricingRuleSeed(TimeOnly StartTime, TimeOnly EndTime, decimal Multiplier);
