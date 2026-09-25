@@ -19,6 +19,9 @@ public class UnitOfWork(AppDbContext context) : IUnitOfWork
         Func<CancellationToken, Task> operation,
         CancellationToken cancellationToken = default)
     {
+        // A nested call must not open a second transaction on the same context
+        // (EF Core throws); it runs inside the active one instead, so only the
+        // outermost call commits or rolls back.
         if (context.Database.CurrentTransaction is not null)
         {
             await operation(cancellationToken);

@@ -11,6 +11,8 @@ builder.Services.AddInfrastructure(builder.Configuration);
 
 var jwtSettings = builder.Configuration.GetSection(JwtSettings.SectionName).Get<JwtSettings>() ?? new JwtSettings();
 
+// Fallback chain: appsettings first, then the JWT_SECRET_KEY environment variable.
+// Missing both fails fast at startup instead of issuing unverifiable tokens.
 var secretKey = !string.IsNullOrWhiteSpace(jwtSettings.SecretKey)
     ? jwtSettings.SecretKey
     : Environment.GetEnvironmentVariable("JWT_SECRET_KEY")

@@ -5,7 +5,8 @@ namespace ConferenceHallBooking.Domain.Entities;
 /// <summary>
 /// Time-of-day pricing rule for the pricing service.
 /// Window is inclusive of start and exclusive of end.
-/// Rules must not overlap; validated when seeding configuration.
+/// Rules should not overlap; overlap is not validated, so PricingService
+/// falls back to the earliest matching rule by StartTime.
 /// </summary>
 public class PricingRule
 {

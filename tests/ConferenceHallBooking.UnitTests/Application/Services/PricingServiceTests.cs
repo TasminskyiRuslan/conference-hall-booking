@@ -183,7 +183,7 @@ public class PricingServiceTests
 
         var result = await service.CalculatePriceAsync(100m, null, Date(1, 12), Date(1, 13));
 
-        // Non-overlapping rules are enforced at seed time; if data still overlaps,
+        // Overlap is not validated anywhere; if data still overlaps,
         // the earliest StartTime wins because rules are ordered by StartTime.
         result.HallCost.Should().Be(150m);
     }

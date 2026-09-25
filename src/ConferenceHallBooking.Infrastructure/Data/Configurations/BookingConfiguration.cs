@@ -6,7 +6,7 @@ namespace ConferenceHallBooking.Infrastructure.Data.Configurations;
 
 /// <summary>
 /// EF Core configuration for the Booking entity.
-/// Overlap prevention uses a PostgreSQL EXCLUDE constraint added in a later migration.
+/// Overlap prevention uses a PostgreSQL EXCLUDE constraint (migration AddBookingsNoOverlapExclusion).
 /// </summary>
 public class BookingConfiguration : IEntityTypeConfiguration<Booking>
 {

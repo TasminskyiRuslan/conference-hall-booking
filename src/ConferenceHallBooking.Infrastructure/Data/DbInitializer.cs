@@ -8,7 +8,8 @@ using Microsoft.Extensions.Logging;
 namespace ConferenceHallBooking.Infrastructure.Data;
 
 /// <summary>
-/// Applies migrations and seeds initial data on first run.
+/// Applies pending migrations and seeds reference data on every startup when
+/// Database:AutoMigrateAndSeed is enabled.
 /// </summary>
 public class DbInitializer(
     AppDbContext context,

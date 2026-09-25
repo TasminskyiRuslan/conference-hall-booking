@@ -1,7 +1,7 @@
 namespace ConferenceHallBooking.Application.Interfaces;
 
 /// <summary>
-/// Seeds the database with initial data on first run.
+/// Applies pending migrations and seeds reference data on application startup.
 /// </summary>
 public interface IDbInitializer
 {

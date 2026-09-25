@@ -2,8 +2,7 @@ namespace ConferenceHallBooking.Application.DTOs.Halls;
 
 /// <summary>
 /// Request model for updating an existing conference hall.
-/// Body of the update endpoint; the hall Id comes from the route
-/// and is mapped into the command by the controller.
+/// The hall Id is a separate value supplied outside this payload.
 /// </summary>
 public record UpdateHallRequest(
     string Name,
