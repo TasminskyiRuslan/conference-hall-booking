@@ -1,8 +1,10 @@
 using System.Text;
+using ConferenceHallBooking.Api.Authorization;
 using ConferenceHallBooking.Api.ExceptionHandlers;
 using ConferenceHallBooking.Application.Configuration;
 using ConferenceHallBooking.Application.Interfaces;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -44,6 +46,7 @@ builder.Services.AddAuthentication(options =>
     };
 });
 builder.Services.AddAuthorization();
+builder.Services.AddSingleton<IAuthorizationMiddlewareResultHandler, ProblemDetailsAuthorizationHandler>();
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
