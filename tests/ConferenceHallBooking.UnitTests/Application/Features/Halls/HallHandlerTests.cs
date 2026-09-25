@@ -5,6 +5,7 @@ using ConferenceHallBooking.Domain.Entities;
 using ConferenceHallBooking.Domain.Exceptions;
 using ConferenceHallBooking.Domain.Interfaces;
 using FluentAssertions;
+using Microsoft.EntityFrameworkCore;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
 
@@ -155,6 +156,23 @@ public class HallHandlerTests
         await act.Should().ThrowAsync<HallNameAlreadyExistsException>();
         await _hallRepository.DidNotReceive().AddAsync(Arg.Any<Hall>(), Arg.Any<CancellationToken>());
         await _unitOfWork.DidNotReceive().SaveChangesAsync(Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task CreateHall_WhenSaveHitsUniqueIndexRace_ShouldPropagateDbUpdateException()
+    {
+        var handler = new CreateHallCommandHandler(_hallRepository, _optionRepository, _unitOfWork);
+        var command = new CreateHallCommand("Race Hall", 100, 250m, []);
+
+        _hallRepository.ExistsByNameAsync("Race Hall", Arg.Any<CancellationToken>())
+            .Returns(false);
+
+        _unitOfWork.SaveChangesAsync(Arg.Any<CancellationToken>())
+            .ThrowsAsync(new DbUpdateException("An error occurred while saving the entity changes."));
+
+        var act = () => handler.Handle(command, CancellationToken.None);
+
+        await act.Should().ThrowAsync<DbUpdateException>();
     }
 
     #endregion
@@ -314,6 +332,36 @@ public class HallHandlerTests
                 Arg.Is<IReadOnlyCollection<Guid>>(ids => ids.Contains(keepOption.Id)),
                 Arg.Any<CancellationToken>())
             .Returns(new List<Option> { keepOption });
+        _bookingRepository.GetBlockedOptionIdsForHallAsync(
+                hallId,
+                Arg.Is<IReadOnlyCollection<Guid>>(ids => ids.Contains(removeOption.Id)),
+                Arg.Any<CancellationToken>())
+            .Returns([removeOption.Id]);
+
+        var act = () => handler.Handle(command, CancellationToken.None);
+
+        var exception = await act.Should().ThrowAsync<HallOptionInUseException>();
+        exception.Which.HallId.Should().Be(hallId);
+        exception.Which.OptionIds.Should().Contain(removeOption.Id);
+
+        await _unitOfWork.DidNotReceive().SaveChangesAsync(Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task UpdateHall_WhenRemovingAllOptionsUsedInUpcomingBookings_ShouldThrowHallOptionInUseException()
+    {
+        var handler = new UpdateHallCommandHandler(_hallRepository, _optionRepository, _bookingRepository, _unitOfWork);
+        var hallId = Guid.NewGuid();
+        var existingHall = new Hall("Existing Hall", 50, 100m);
+        typeof(Hall).GetProperty(nameof(Hall.Id))!.SetValue(existingHall, hallId);
+        var removeOption = NewOption("Remove Option", 35m);
+
+        existingHall.AddOption(removeOption);
+
+        var command = new UpdateHallCommand(hallId, "Updated Hall", 60, 120m, []);
+
+        _hallRepository.GetByIdAsync(hallId, Arg.Any<CancellationToken>())
+            .Returns(existingHall);
         _bookingRepository.GetBlockedOptionIdsForHallAsync(
                 hallId,
                 Arg.Is<IReadOnlyCollection<Guid>>(ids => ids.Contains(removeOption.Id)),
