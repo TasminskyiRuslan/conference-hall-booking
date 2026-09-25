@@ -9,15 +9,14 @@ using MediatR;
 
 namespace ConferenceHallBooking.Application.Features.Halls.Handlers;
 
-/// <summary>
-/// Handler for UpdateHallCommand.
-/// </summary>
+/// <summary>Handler for UpdateHallCommand. Updates fields and synchronizes options.</summary>
 public class UpdateHallCommandHandler(
     IHallRepository hallRepository,
     IOptionRepository optionRepository,
     IBookingRepository bookingRepository,
     IUnitOfWork unitOfWork) : IRequestHandler<UpdateHallCommand, HallResponse>
 {
+    /// <summary>Updates hall fields and keeps its option list in sync.</summary>
     public async Task<HallResponse> Handle(UpdateHallCommand request, CancellationToken cancellationToken)
     {
         var hall = await hallRepository.GetByIdAsync(request.Id, cancellationToken)

@@ -8,12 +8,11 @@ using MediatR;
 
 namespace ConferenceHallBooking.Application.Features.Halls.Handlers;
 
-/// <summary>
-/// Handler for GetHallByIdQuery.
-/// </summary>
+/// <summary>Handler for GetHallByIdQuery. Returns the hall with its options.</summary>
 public class GetHallByIdQueryHandler(IHallRepository hallRepository)
     : IRequestHandler<GetHallByIdQuery, HallResponse>
 {
+    /// <summary>Returns a hall with its linked options.</summary>
     public async Task<HallResponse> Handle(GetHallByIdQuery request, CancellationToken cancellationToken)
     {
         var hall = await hallRepository.GetByIdAsync(request.Id, cancellationToken)

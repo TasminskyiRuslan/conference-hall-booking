@@ -11,6 +11,7 @@ namespace ConferenceHallBooking.Application.Mappers;
 /// </summary>
 public static class BookingMapper
 {
+    /// <summary>Maps a booking with its hall and selected options to BookingResponse.</summary>
     public static BookingResponse MapToResponse(Booking booking)
     {
         var selectedOptions = booking.BookingOptions

@@ -7,6 +7,7 @@ namespace ConferenceHallBooking.Application.Interfaces.Bookings;
 /// </summary>
 public interface IPricingService
 {
+    /// <summary>Applies time-of-day multipliers and totals the hall and options cost.</summary>
     Task<PricingResult> CalculatePriceAsync(
         decimal baseHourlyRate,
         IReadOnlyCollection<decimal>? optionPrices,

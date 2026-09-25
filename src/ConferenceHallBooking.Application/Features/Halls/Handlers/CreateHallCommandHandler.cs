@@ -9,14 +9,13 @@ using MediatR;
 
 namespace ConferenceHallBooking.Application.Features.Halls.Handlers;
 
-/// <summary>
-/// Handler for CreateHallCommand.
-/// </summary>
+/// <summary>Handler for CreateHallCommand. Creates the hall and links its options.</summary>
 public class CreateHallCommandHandler(
     IHallRepository hallRepository,
     IOptionRepository optionRepository,
     IUnitOfWork unitOfWork) : IRequestHandler<CreateHallCommand, HallResponse>
 {
+    /// <summary>Creates a hall with a unique name and links the requested options.</summary>
     public async Task<HallResponse> Handle(CreateHallCommand request, CancellationToken cancellationToken)
     {
         if (await hallRepository.ExistsByNameAsync(request.Name, cancellationToken))

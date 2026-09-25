@@ -12,6 +12,7 @@ namespace ConferenceHallBooking.Application.Services.Bookings;
 /// </summary>
 public class PricingService(IPricingRuleRepository pricingRuleRepository) : IPricingService
 {
+    /// <summary>Computes the hall cost and adds option prices for the time slot.</summary>
     public async Task<PricingResult> CalculatePriceAsync(
         decimal baseHourlyRate,
         IReadOnlyCollection<decimal>? optionPrices,

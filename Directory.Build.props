@@ -7,5 +7,6 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <AnalysisLevel>latest</AnalysisLevel>
     <EnforceCodeStyleInBuild>false</EnforceCodeStyleInBuild>
+    <GenerateDocumentationFile Condition="'$(MSBuildProjectName)' != 'ConferenceHallBooking.UnitTests'">true</GenerateDocumentationFile>
   </PropertyGroup>
 </Project>

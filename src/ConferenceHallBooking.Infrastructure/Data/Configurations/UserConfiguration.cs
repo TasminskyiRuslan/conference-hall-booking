@@ -9,6 +9,7 @@ namespace ConferenceHallBooking.Infrastructure.Data.Configurations;
 /// </summary>
 public class UserConfiguration : IEntityTypeConfiguration<User>
 {
+    /// <summary>Configures keys, unique email index and relations for User.</summary>
     public void Configure(EntityTypeBuilder<User> builder)
     {
         builder.HasKey(u => u.Id);

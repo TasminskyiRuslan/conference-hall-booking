@@ -32,6 +32,7 @@ public class Hall
 
     private Hall() { }
 
+    /// <summary>Creates a hall with the given name, capacity and hourly rate.</summary>
     public Hall(string name, int capacity, decimal baseHourlyRate)
     {
         Id = Guid.NewGuid();

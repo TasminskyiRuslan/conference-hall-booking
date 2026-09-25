@@ -8,6 +8,7 @@ namespace ConferenceHallBooking.Application.Validators.Bookings;
 /// </summary>
 public class CreateBookingCommandValidator : AbstractValidator<CreateBookingCommand>
 {
+    /// <summary>Defines validation rules for booking creation.</summary>
     public CreateBookingCommandValidator()
     {
         RuleFor(x => x.HallId)

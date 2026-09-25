@@ -8,6 +8,8 @@ namespace ConferenceHallBooking.Application.Interfaces.Auth;
 /// </summary>
 public interface IAuthService
 {
+    /// <summary>Creates the account and returns an auth token.</summary>
     Task<AuthResponse> RegisterAsync(RegisterCommand command, CancellationToken cancellationToken = default);
+    /// <summary>Authenticates credentials and returns an auth token.</summary>
     Task<AuthResponse> LoginAsync(LoginCommand command, CancellationToken cancellationToken = default);
 }

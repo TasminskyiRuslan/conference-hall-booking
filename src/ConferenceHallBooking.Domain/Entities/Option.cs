@@ -21,6 +21,7 @@ public class Option
 
     private Option() { }
 
+    /// <summary>Creates a bookable service option with its price.</summary>
     public Option(string name, decimal price)
     {
         Id = Guid.NewGuid();

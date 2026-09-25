@@ -7,5 +7,6 @@ namespace ConferenceHallBooking.Domain.Exceptions;
 public class ValidationException(IDictionary<string, string[]> errors)
     : BusinessRuleException("One or more validation errors occurred.", "VALIDATION_ERROR")
 {
+    /// <summary>Validation errors grouped by property name.</summary>
     public IDictionary<string, string[]> Errors { get; } = errors;
 }

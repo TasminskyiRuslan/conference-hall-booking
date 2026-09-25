@@ -9,6 +9,7 @@ namespace ConferenceHallBooking.Application.Mappers;
 /// </summary>
 public static class HallMapper
 {
+    /// <summary>Maps a hall and its options to HallResponse.</summary>
     public static HallResponse MapToResponse(Hall hall)
     {
         var optionResponses = hall.HallOptions

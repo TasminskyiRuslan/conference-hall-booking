@@ -10,6 +10,7 @@ namespace ConferenceHallBooking.Infrastructure.Repositories;
 /// </summary>
 public class PricingRuleRepository(AppDbContext context) : IPricingRuleRepository
 {
+    /// <summary>Gets pricing rules ordered by start time.</summary>
     public async Task<IReadOnlyList<PricingRule>> GetOrderedAsync(CancellationToken cancellationToken = default)
     {
         return await context.PricingRules

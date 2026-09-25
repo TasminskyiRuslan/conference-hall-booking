@@ -8,11 +8,13 @@ namespace ConferenceHallBooking.Infrastructure.Data;
 /// </summary>
 public class UnitOfWork(AppDbContext context) : IUnitOfWork
 {
+    /// <summary>Persists pending changes; returns the number of affected rows.</summary>
     public async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
         return await context.SaveChangesAsync(cancellationToken);
     }
 
+    /// <summary>Runs the operation in a transaction, joining an outer one when already active.</summary>
     public async Task ExecuteInTransactionAsync(
         Func<CancellationToken, Task> operation,
         CancellationToken cancellationToken = default)

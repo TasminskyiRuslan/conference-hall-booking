@@ -9,6 +9,7 @@ namespace ConferenceHallBooking.Application.Extensions;
 /// </summary>
 public static class OptionRepositoryExtensions
 {
+    /// <summary>Loads options by IDs and throws OptionsNotFoundException when any ID is missing.</summary>
     public static async Task<IReadOnlyList<Option>> GetByIdsOrThrowAsync(
         this IOptionRepository repository,
         IReadOnlyCollection<Guid> optionIds,

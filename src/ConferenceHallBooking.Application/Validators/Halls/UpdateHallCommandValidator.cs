@@ -8,6 +8,7 @@ namespace ConferenceHallBooking.Application.Validators.Halls;
 /// </summary>
 public class UpdateHallCommandValidator : AbstractValidator<UpdateHallCommand>
 {
+    /// <summary>Defines validation rules for hall updates.</summary>
     public UpdateHallCommandValidator()
     {
         RuleFor(x => x.Name)

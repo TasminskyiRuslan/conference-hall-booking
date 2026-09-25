@@ -8,6 +8,7 @@ namespace ConferenceHallBooking.Application.Validators.Halls;
 /// </summary>
 public class SearchAvailableHallsQueryValidator : AbstractValidator<SearchAvailableHallsQuery>
 {
+    /// <summary>Defines validation rules for availability search.</summary>
     public SearchAvailableHallsQueryValidator()
     {
         RuleFor(x => x.Capacity)

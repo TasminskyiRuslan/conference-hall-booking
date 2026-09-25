@@ -17,6 +17,7 @@ public class GetBookingByIdQueryHandler(
     IBookingRepository bookingRepository,
     IUserRepository userRepository) : IRequestHandler<GetBookingByIdQuery, BookingResponse>
 {
+    /// <summary>Returns a booking to its owner or to an administrator.</summary>
     public async Task<BookingResponse> Handle(GetBookingByIdQuery request, CancellationToken cancellationToken)
     {
         var booking = await bookingRepository.GetByIdAsync(request.Id, cancellationToken)

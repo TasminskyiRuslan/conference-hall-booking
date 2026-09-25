@@ -6,12 +6,11 @@ using MediatR;
 
 namespace ConferenceHallBooking.Application.Features.Halls.Handlers;
 
-/// <summary>
-/// Handler for SearchAvailableHallsQuery.
-/// </summary>
+/// <summary>Handler for SearchAvailableHallsQuery. Filters halls by free slot and capacity.</summary>
 public class SearchAvailableHallsQueryHandler(IHallRepository hallRepository)
     : IRequestHandler<SearchAvailableHallsQuery, IReadOnlyCollection<HallResponse>>
 {
+    /// <summary>Returns halls that are free in the requested slot.</summary>
     public async Task<IReadOnlyCollection<HallResponse>> Handle(
         SearchAvailableHallsQuery request,
         CancellationToken cancellationToken)

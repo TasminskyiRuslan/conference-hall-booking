@@ -22,6 +22,7 @@ public class CreateBookingCommandHandler(
     IPricingService pricingService,
     IUnitOfWork unitOfWork) : IRequestHandler<CreateBookingCommand, BookingResponse>
 {
+    /// <summary>Checks hall, user, overlap and options, then persists a priced booking.</summary>
     public async Task<BookingResponse> Handle(CreateBookingCommand request, CancellationToken cancellationToken)
     {
         var hall = await hallRepository.GetByIdAsync(request.HallId, cancellationToken)

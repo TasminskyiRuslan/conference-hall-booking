@@ -10,6 +10,7 @@ namespace ConferenceHallBooking.Infrastructure.Repositories;
 /// </summary>
 public class BookingRepository(AppDbContext context) : IBookingRepository
 {
+    /// <summary>Gets a booking by identifier, or null when it does not exist.</summary>
     public async Task<Booking?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
         return await context.Bookings
@@ -19,6 +20,7 @@ public class BookingRepository(AppDbContext context) : IBookingRepository
             .FirstOrDefaultAsync(b => b.Id == id, cancellationToken);
     }
 
+    /// <summary>Checks whether any booking of the hall overlaps the given half-open slot.</summary>
     public async Task<bool> HasOverlappingBookingAsync(
         Guid hallId,
         DateTimeOffset startTime,
@@ -29,6 +31,7 @@ public class BookingRepository(AppDbContext context) : IBookingRepository
             .AnyAsync(b => b.HallId == hallId && startTime < b.EndTime && endTime > b.StartTime, cancellationToken);
     }
 
+    /// <summary>Counts all bookings made for the hall.</summary>
     public async Task<int> GetBookingCountByHallIdAsync(
         Guid hallId,
         CancellationToken cancellationToken = default)
@@ -37,6 +40,7 @@ public class BookingRepository(AppDbContext context) : IBookingRepository
             .CountAsync(b => b.HallId == hallId, cancellationToken);
     }
 
+    /// <summary>Gets bookings that start within the given date range.</summary>
     public async Task<IReadOnlyList<Booking>> GetByDateRangeAsync(
         DateTimeOffset from,
         DateTimeOffset to,
@@ -51,11 +55,13 @@ public class BookingRepository(AppDbContext context) : IBookingRepository
             .ToListAsync(cancellationToken);
     }
 
+    /// <summary>Adds a new booking.</summary>
     public async Task AddAsync(Booking booking, CancellationToken cancellationToken = default)
     {
         await context.Bookings.AddAsync(booking, cancellationToken);
     }
 
+    /// <summary>Returns options used by upcoming bookings; they cannot be unlinked.</summary>
     public async Task<IReadOnlyCollection<Guid>> GetBlockedOptionIdsForHallAsync(
         Guid hallId,
         IReadOnlyCollection<Guid> candidateOptionIds,

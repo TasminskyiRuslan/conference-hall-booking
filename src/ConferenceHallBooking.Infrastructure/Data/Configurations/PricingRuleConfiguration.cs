@@ -9,6 +9,7 @@ namespace ConferenceHallBooking.Infrastructure.Data.Configurations;
 /// </summary>
 public class PricingRuleConfiguration : IEntityTypeConfiguration<PricingRule>
 {
+    /// <summary>Configures keys and decimal precision for PricingRule.</summary>
     public void Configure(EntityTypeBuilder<PricingRule> builder)
     {
         builder.ToTable("PricingRules");

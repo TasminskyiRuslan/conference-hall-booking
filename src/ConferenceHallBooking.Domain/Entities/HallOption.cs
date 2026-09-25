@@ -19,6 +19,7 @@ public class HallOption
 
     private HallOption() { }
 
+    /// <summary>Links an option that a hall offers.</summary>
     public HallOption(Option option)
     {
         if (option is null)

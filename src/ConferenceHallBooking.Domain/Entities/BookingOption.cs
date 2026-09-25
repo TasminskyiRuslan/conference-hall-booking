@@ -22,6 +22,7 @@ public class BookingOption
 
     private BookingOption() { }
 
+    /// <summary>Links an option to a booking with its price frozen at booking time.</summary>
     public BookingOption(Option option, decimal priceAtBooking)
     {
         if (option is null)

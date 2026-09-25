@@ -8,5 +8,6 @@ public class OptionsNotFoundException(IReadOnlyCollection<Guid> missingIds)
         $"Options not found: {string.Join(", ", missingIds)}.",
         "OPTIONS_NOT_FOUND")
 {
+    /// <summary>IDs of the options that were not found.</summary>
     public IReadOnlyCollection<Guid> MissingIds { get; } = missingIds;
 }

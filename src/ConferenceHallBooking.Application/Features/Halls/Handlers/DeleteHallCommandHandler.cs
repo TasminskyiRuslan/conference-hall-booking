@@ -6,14 +6,13 @@ using MediatR;
 
 namespace ConferenceHallBooking.Application.Features.Halls.Handlers;
 
-/// <summary>
-/// Handler for DeleteHallCommand.
-/// </summary>
+/// <summary>Handler for DeleteHallCommand. Refuses to delete halls with bookings.</summary>
 public class DeleteHallCommandHandler(
     IHallRepository hallRepository,
     IBookingRepository bookingRepository,
     IUnitOfWork unitOfWork) : IRequestHandler<DeleteHallCommand>
 {
+    /// <summary>Deletes a hall after verifying it has no bookings.</summary>
     public async Task Handle(DeleteHallCommand request, CancellationToken cancellationToken)
     {
         var hall = await hallRepository.GetByIdAsync(request.Id, cancellationToken)

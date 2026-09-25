@@ -26,6 +26,7 @@ public class User
 
     private User() { }
 
+    /// <summary>Creates a user with a pre-computed BCrypt password hash.</summary>
     public User(string email, string passwordHash, string fullName, UserRole role = UserRole.Customer)
     {
         if (string.IsNullOrWhiteSpace(email))

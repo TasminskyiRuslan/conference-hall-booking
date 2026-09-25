@@ -11,6 +11,7 @@ namespace ConferenceHallBooking.Application.Features.Auth.Handlers;
 public class RegisterCommandHandler(IAuthService authService)
     : IRequestHandler<RegisterCommand, AuthResponse>
 {
+    /// <summary>Delegates account creation to IAuthService and returns the token response.</summary>
     public async Task<AuthResponse> Handle(
         RegisterCommand request, CancellationToken cancellationToken)
     {

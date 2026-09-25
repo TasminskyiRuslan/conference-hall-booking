@@ -10,6 +10,7 @@ namespace ConferenceHallBooking.Infrastructure.Repositories;
 /// </summary>
 public class HallRepository(AppDbContext context) : IHallRepository
 {
+    /// <summary>Gets a hall by identifier, or null when it does not exist.</summary>
     public async Task<Hall?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
         return await context.Halls
@@ -18,6 +19,7 @@ public class HallRepository(AppDbContext context) : IHallRepository
             .FirstOrDefaultAsync(h => h.Id == id, cancellationToken);
     }
 
+    /// <summary>Gets halls that are free in the slot and meet the capacity requirement.</summary>
     public async Task<IReadOnlyList<Hall>> GetAvailableHallsAsync(
         DateTimeOffset startTime,
         DateTimeOffset endTime,
@@ -39,6 +41,7 @@ public class HallRepository(AppDbContext context) : IHallRepository
             .ToListAsync(cancellationToken);
     }
 
+    /// <summary>Gets halls that have any booking within the given range.</summary>
     public async Task<IReadOnlyList<Hall>> GetHallsWithBookingsInRangeAsync(
         DateTimeOffset from,
         DateTimeOffset to,
@@ -50,16 +53,19 @@ public class HallRepository(AppDbContext context) : IHallRepository
             .ToListAsync(cancellationToken);
     }
 
+    /// <summary>Checks whether a hall with the given name already exists.</summary>
     public async Task<bool> ExistsByNameAsync(string name, CancellationToken cancellationToken = default)
     {
         return await context.Halls.AnyAsync(h => h.Name == name, cancellationToken);
     }
 
+    /// <summary>Adds a new hall.</summary>
     public async Task AddAsync(Hall hall, CancellationToken cancellationToken = default)
     {
         await context.Halls.AddAsync(hall, cancellationToken);
     }
 
+    /// <summary>Removes the hall from the context.</summary>
     public void Delete(Hall hall)
     {
         context.Halls.Remove(hall);

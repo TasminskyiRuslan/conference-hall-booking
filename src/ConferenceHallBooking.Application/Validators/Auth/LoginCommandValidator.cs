@@ -8,6 +8,7 @@ namespace ConferenceHallBooking.Application.Validators.Auth;
 /// </summary>
 public class LoginCommandValidator : AbstractValidator<LoginCommand>
 {
+    /// <summary>Defines validation rules for login.</summary>
     public LoginCommandValidator()
     {
         RuleFor(x => x.Email)

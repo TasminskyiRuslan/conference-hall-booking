@@ -10,8 +10,10 @@ using Microsoft.Extensions.Configuration;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
+/// <summary>Registers the DbContext, repositories, unit of work and infrastructure services.</summary>
 public static class InfrastructureServiceExtensions
 {
+    /// <summary>Adds the Infrastructure layer to the service collection.</summary>
     public static IServiceCollection AddInfrastructure(
         this IServiceCollection services,
         IConfiguration configuration)

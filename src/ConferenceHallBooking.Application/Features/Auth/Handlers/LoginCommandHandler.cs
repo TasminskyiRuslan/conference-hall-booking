@@ -11,6 +11,7 @@ namespace ConferenceHallBooking.Application.Features.Auth.Handlers;
 public class LoginCommandHandler(IAuthService authService)
     : IRequestHandler<LoginCommand, AuthResponse>
 {
+    /// <summary>Delegates authentication to IAuthService and returns the token response.</summary>
     public async Task<AuthResponse> Handle(
         LoginCommand request, CancellationToken cancellationToken)
     {

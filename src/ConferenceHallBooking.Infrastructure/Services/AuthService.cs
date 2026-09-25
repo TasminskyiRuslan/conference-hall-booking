@@ -24,6 +24,7 @@ public class AuthService(
     private readonly SecurityKey _signingKey =
         new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.Value.SecretKey));
 
+    /// <summary>Hashes the password, stores the user and issues a token.</summary>
     public async Task<AuthResponse> RegisterAsync(
         RegisterCommand command, CancellationToken cancellationToken = default)
     {
@@ -42,6 +43,7 @@ public class AuthService(
         return new AuthResponse(user.Id, user.Email, user.FullName, user.Role.ToString(), token);
     }
 
+    /// <summary>Verifies credentials against the stored hash and issues a token.</summary>
     public async Task<AuthResponse> LoginAsync(
         LoginCommand command, CancellationToken cancellationToken = default)
     {

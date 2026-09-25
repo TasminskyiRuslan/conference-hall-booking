@@ -5,6 +5,7 @@ namespace ConferenceHallBooking.Domain.Interfaces;
 /// </summary>
 public interface IUnitOfWork
 {
+    /// <summary>Persists pending changes; returns the number of affected rows.</summary>
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 
     /// <summary>

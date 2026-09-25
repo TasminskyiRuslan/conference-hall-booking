@@ -10,6 +10,7 @@ namespace ConferenceHallBooking.Infrastructure.Repositories;
 /// </summary>
 public class OptionRepository(AppDbContext context) : IOptionRepository
 {
+    /// <summary>Gets options for the given IDs, skipping IDs that do not exist.</summary>
     public async Task<IReadOnlyList<Option>> GetByIdsAsync(IReadOnlyCollection<Guid> ids, CancellationToken cancellationToken = default)
     {
         return await context.Options

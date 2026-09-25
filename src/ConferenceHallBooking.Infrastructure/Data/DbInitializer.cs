@@ -17,6 +17,7 @@ public class DbInitializer(
 {
     private const string AdminSeedSection = "AdminSeed";
 
+    /// <summary>Applies pending migrations and seeds reference data when missing.</summary>
     public async Task SeedAsync(CancellationToken cancellationToken = default)
     {
         try

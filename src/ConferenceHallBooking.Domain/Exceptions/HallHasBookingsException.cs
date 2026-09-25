@@ -8,6 +8,8 @@ public class HallHasBookingsException(Guid hallId, int bookingCount)
         $"Hall {hallId} has {bookingCount} existing booking(s) and cannot be deleted.",
         "HALL_HAS_BOOKINGS")
 {
+    /// <summary>Hall that could not be deleted.</summary>
     public Guid HallId { get; } = hallId;
+    /// <summary>Number of bookings that blocked the deletion.</summary>
     public int BookingCount { get; } = bookingCount;
 }

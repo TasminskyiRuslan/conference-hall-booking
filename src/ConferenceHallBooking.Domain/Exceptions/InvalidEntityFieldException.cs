@@ -8,6 +8,8 @@ public class InvalidEntityFieldException(string entity, string fieldName, string
         $"{entity}.{fieldName} is invalid: {reason}.",
         "INVALID_ENTITY_FIELD")
 {
+    /// <summary>Name of the entity that failed validation.</summary>
     public string Entity { get; } = entity;
+    /// <summary>Name of the field that failed validation.</summary>
     public string FieldName { get; } = fieldName;
 }

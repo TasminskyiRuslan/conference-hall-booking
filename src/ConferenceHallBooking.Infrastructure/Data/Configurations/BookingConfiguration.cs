@@ -10,6 +10,7 @@ namespace ConferenceHallBooking.Infrastructure.Data.Configurations;
 /// </summary>
 public class BookingConfiguration : IEntityTypeConfiguration<Booking>
 {
+    /// <summary>Configures keys, relations and decimal precision for Booking.</summary>
     public void Configure(EntityTypeBuilder<Booking> builder)
     {
         builder.HasKey(b => b.Id);

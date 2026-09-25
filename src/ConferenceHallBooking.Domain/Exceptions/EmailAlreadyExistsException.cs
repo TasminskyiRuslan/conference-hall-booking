@@ -8,5 +8,6 @@ public class EmailAlreadyExistsException(string email)
         $"A user with the email '{email}' already exists.",
         "EMAIL_ALREADY_EXISTS")
 {
+    /// <summary>Email that is already registered.</summary>
     public string Email { get; } = email;
 }

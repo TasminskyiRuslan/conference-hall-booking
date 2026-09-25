@@ -8,5 +8,6 @@ public class HallOptionNotSupportedException(Guid hallId, IReadOnlyCollection<Gu
         $"Hall {hallId} does not support options: {string.Join(", ", unsupportedOptionIds)}.",
         "HALL_OPTION_NOT_SUPPORTED")
 {
+    /// <summary>Option IDs the hall does not offer.</summary>
     public IReadOnlyCollection<Guid> UnsupportedOptionIds { get; } = unsupportedOptionIds;
 }
