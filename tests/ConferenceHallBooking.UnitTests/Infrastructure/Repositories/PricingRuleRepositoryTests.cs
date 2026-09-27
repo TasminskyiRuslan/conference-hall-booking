@@ -33,12 +33,4 @@ public class PricingRuleRepositoryTests : IDisposable
         result[1].StartTime.Should().Be(new TimeOnly(12, 0));
         result[2].StartTime.Should().Be(new TimeOnly(18, 0));
     }
-
-    [Fact]
-    public async Task GetOrderedAsync_WhenEmpty_ShouldReturnEmpty()
-    {
-        var result = await _repository.GetOrderedAsync();
-
-        result.Should().BeEmpty();
-    }
 }

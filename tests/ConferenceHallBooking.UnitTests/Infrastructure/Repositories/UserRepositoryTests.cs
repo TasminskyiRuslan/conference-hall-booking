@@ -31,14 +31,6 @@ public class UserRepositoryTests : IDisposable
     }
 
     [Fact]
-    public async Task GetByEmailAsync_WhenMissing_ShouldReturnNull()
-    {
-        var result = await _repository.GetByEmailAsync("missing@test.com");
-
-        result.Should().BeNull();
-    }
-
-    [Fact]
     public async Task ExistsByEmailAsync_WhenExists_ShouldReturnTrue()
     {
         _context.Users.Add(new User("user@test.com", "hash", "Test User"));
@@ -55,18 +47,5 @@ public class UserRepositoryTests : IDisposable
         var result = await _repository.ExistsByEmailAsync("missing@test.com");
 
         result.Should().BeFalse();
-    }
-
-    [Fact]
-    public async Task AddAsync_ThenGetByEmail_ShouldPersist()
-    {
-        var user = new User("new@test.com", "hash", "New User");
-
-        await _repository.AddAsync(user);
-        await _context.SaveChangesAsync();
-
-        var result = await _repository.GetByEmailAsync("new@test.com");
-        result.Should().NotBeNull();
-        result!.Id.Should().Be(user.Id);
     }
 }

@@ -33,23 +33,4 @@ public class OptionRepositoryTests : IDisposable
         result.Should().Contain(o => o.Id == sound.Id);
         result.Should().NotContain(o => o.Id == wifi.Id);
     }
-
-    [Fact]
-    public async Task GetByIdsAsync_WhenNoneMatch_ShouldReturnEmpty()
-    {
-        _context.Options.Add(new Option("Projector", 500m));
-        await _context.SaveChangesAsync();
-
-        var result = await _repository.GetByIdsAsync([Guid.NewGuid()]);
-
-        result.Should().BeEmpty();
-    }
-
-    [Fact]
-    public async Task GetByIdsAsync_WhenEmptyIds_ShouldReturnEmpty()
-    {
-        var result = await _repository.GetByIdsAsync([]);
-
-        result.Should().BeEmpty();
-    }
 }

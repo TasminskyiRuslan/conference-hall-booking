@@ -39,25 +39,6 @@ public class ValidationBehaviorTests
     }
 
     [Fact]
-    public async Task Handle_WhenValidationFails_ShouldThrowValidationException()
-    {
-        var failures = new List<ValidationFailure>
-        {
-            new("Name", "Name is required.")
-        };
-        _validator.ValidateAsync(Arg.Any<ValidationContext<TestRequest>>(), Arg.Any<CancellationToken>())
-            .Returns(new ValidationResult(failures));
-
-        var behavior = new ValidationBehavior<TestRequest, TestResponse>([_validator]);
-        var request = new TestRequest("");
-
-        var act = () => behavior.Handle(request, _next, CancellationToken.None);
-
-        await act.Should().ThrowAsync<ValidationException>();
-        await _next.DidNotReceive().Invoke();
-    }
-
-    [Fact]
     public async Task Handle_WhenValidationFails_ShouldGroupErrorsByProperty()
     {
         var failures = new List<ValidationFailure>

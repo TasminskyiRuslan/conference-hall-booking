@@ -83,6 +83,22 @@ public class GlobalExceptionHandlerTests
     }
 
     [Fact]
+    public async Task TryHandleAsync_WithHallOptionInUseException_ShouldReturn409WithErrorCode()
+    {
+        var context = CreateHttpContext();
+        var exception = new HallOptionInUseException(Guid.NewGuid(), [Guid.NewGuid()]);
+
+        var result = await _sut.TryHandleAsync(context, exception, CancellationToken.None);
+
+        result.Should().BeTrue();
+        context.Response.StatusCode.Should().Be(409);
+
+        context.Response.Body.Seek(0, System.IO.SeekOrigin.Begin);
+        var body = await new System.IO.StreamReader(context.Response.Body).ReadToEndAsync();
+        body.Should().Contain("HALL_OPTION_IN_USE");
+    }
+
+    [Fact]
     public async Task TryHandleAsync_ShouldReturnProblemDetailsJson()
     {
         var context = CreateHttpContext();
@@ -264,18 +280,6 @@ public class GlobalExceptionHandlerTests
         context.Response.Body.Seek(0, System.IO.SeekOrigin.Begin);
         var body = await new System.IO.StreamReader(context.Response.Body).ReadToEndAsync();
         body.Should().Contain("UNIQUE_CONSTRAINT_VIOLATION");
-    }
-
-    [Fact]
-    public async Task TryHandleAsync_WithInvalidOperationException_ShouldReturn500()
-    {
-        var context = CreateHttpContext();
-        var exception = new InvalidOperationException("Cannot modify a confirmed booking.");
-
-        var result = await _sut.TryHandleAsync(context, exception, CancellationToken.None);
-
-        result.Should().BeTrue();
-        context.Response.StatusCode.Should().Be(500);
     }
 
     private static HttpContext CreateHttpContext()

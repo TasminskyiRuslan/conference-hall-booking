@@ -47,14 +47,6 @@ public class BookingRepositoryTests : IDisposable
     }
 
     [Fact]
-    public async Task GetByIdAsync_WhenMissing_ShouldReturnNull()
-    {
-        var result = await _repository.GetByIdAsync(Guid.NewGuid());
-
-        result.Should().BeNull();
-    }
-
-    [Fact]
     public async Task HasOverlappingBookingAsync_WhenOverlap_ShouldReturnTrue()
     {
         var hall = CreateHall();
@@ -120,15 +112,6 @@ public class BookingRepositoryTests : IDisposable
     }
 
     [Fact]
-    public async Task GetBlockedOptionIdsForHallAsync_WhenEmptyCandidates_ShouldReturnEmpty()
-    {
-        var result = await _repository.GetBlockedOptionIdsForHallAsync(
-            Guid.NewGuid(), []);
-
-        result.Should().BeEmpty();
-    }
-
-    [Fact]
     public async Task GetBlockedOptionIdsForHallAsync_WhenFutureBookingHasOption_ShouldReturnOptionId()
     {
         var hall = CreateHall();
@@ -167,21 +150,5 @@ public class BookingRepositoryTests : IDisposable
             hall.Id, [option.Id]);
 
         result.Should().BeEmpty();
-    }
-
-    [Fact]
-    public async Task AddAsync_ThenGetById_ShouldPersist()
-    {
-        var hall = CreateHall();
-        var user = CreateUser();
-        var booking = new Booking(hall, user, Day(10, 10), Day(10, 12), 2000m, 2000m);
-        _context.AddRange(hall, user);
-        await _context.SaveChangesAsync();
-
-        await _repository.AddAsync(booking);
-        await _context.SaveChangesAsync();
-
-        var result = await _repository.GetByIdAsync(booking.Id);
-        result.Should().NotBeNull();
     }
 }

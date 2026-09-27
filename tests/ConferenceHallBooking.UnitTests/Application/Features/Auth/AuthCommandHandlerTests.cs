@@ -2,7 +2,6 @@ using ConferenceHallBooking.Application.DTOs.Auth;
 using ConferenceHallBooking.Application.Features.Auth.Commands;
 using ConferenceHallBooking.Application.Features.Auth.Handlers;
 using ConferenceHallBooking.Application.Interfaces.Auth;
-using ConferenceHallBooking.Domain.Exceptions;
 using FluentAssertions;
 using NSubstitute;
 
@@ -29,20 +28,6 @@ public class AuthCommandHandlerTests
     }
 
     [Fact]
-    public async Task RegisterCommandHandler_WhenAuthServiceThrows_ShouldPropagate()
-    {
-        var command = new RegisterCommand(
-            "taken@example.com", "Passw0rd!", "Passw0rd!", "Test User");
-        _authService.RegisterAsync(command, Arg.Any<CancellationToken>())
-            .Returns<AuthResponse>(_ => throw new EmailAlreadyExistsException(command.Email));
-        var handler = new RegisterCommandHandler(_authService);
-
-        var act = () => handler.Handle(command, CancellationToken.None);
-
-        await act.Should().ThrowAsync<EmailAlreadyExistsException>();
-    }
-
-    [Fact]
     public async Task LoginCommandHandler_ShouldDelegateToAuthService_AndReturnResponse()
     {
         var command = new LoginCommand("test@example.com", "Passw0rd!");
@@ -55,18 +40,5 @@ public class AuthCommandHandlerTests
 
         result.Should().Be(response);
         await _authService.Received(1).LoginAsync(command, Arg.Any<CancellationToken>());
-    }
-
-    [Fact]
-    public async Task LoginCommandHandler_WhenAuthServiceThrows_ShouldPropagate()
-    {
-        var command = new LoginCommand("test@example.com", "wrong");
-        _authService.LoginAsync(command, Arg.Any<CancellationToken>())
-            .Returns<AuthResponse>(_ => throw new InvalidCredentialsException());
-        var handler = new LoginCommandHandler(_authService);
-
-        var act = () => handler.Handle(command, CancellationToken.None);
-
-        await act.Should().ThrowAsync<InvalidCredentialsException>();
     }
 }

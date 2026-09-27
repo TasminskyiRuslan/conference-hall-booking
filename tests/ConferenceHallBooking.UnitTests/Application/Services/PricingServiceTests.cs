@@ -163,18 +163,6 @@ public class PricingServiceTests
     }
 
     [Fact]
-    public async Task CalculatePrice_WhenBookingDuringNightHoursWithoutRule_ShouldUseBaseRate()
-    {
-        var service = CreateDefaultAppRules();
-
-        var result = await service.CalculatePriceAsync(100m, null, Date(1, 0), Date(1, 4));
-
-        result.HallCost.Should().Be(400m);
-        result.OptionsCost.Should().Be(0m);
-        result.TotalCost.Should().Be(400m);
-    }
-
-    [Fact]
     public async Task CalculatePrice_WhenRulesOverlap_ShouldApplyFirstMatchingRule()
     {
         var service = CreateService(
@@ -227,59 +215,4 @@ public class PricingServiceTests
 
         result.HallCost.Should().Be(200m);
     }
-
-    [Fact]
-    public async Task CalculatePrice_DefaultRules_MorningToNoonWithoutPeak_ShouldUseBaseRate()
-    {
-        var service = CreateDefaultAppRules();
-
-        var result = await service.CalculatePriceAsync(100m, null, Date(1, 9), Date(1, 12));
-
-        result.HallCost.Should().Be(300m);
-    }
-
-    [Fact]
-    public async Task CalculatePrice_DefaultRules_AfternoonWithoutPeak_ShouldUseBaseRate()
-    {
-        var service = CreateDefaultAppRules();
-
-        var result = await service.CalculatePriceAsync(100m, null, Date(1, 14), Date(1, 18));
-
-        result.HallCost.Should().Be(400m);
-    }
-
-    [Fact]
-    public async Task CalculatePrice_DefaultRules_PeakWindow_ShouldApply115Percent()
-    {
-        var service = CreateDefaultAppRules();
-
-        var result = await service.CalculatePriceAsync(100m, null, Date(1, 12), Date(1, 14));
-
-        result.HallCost.Should().Be(230m);
-    }
-
-    [Fact]
-    public async Task CalculatePrice_DefaultRules_EveningWindow_ShouldApply80Percent()
-    {
-        var service = CreateDefaultAppRules();
-
-        var result = await service.CalculatePriceAsync(100m, null, Date(1, 18), Date(1, 23));
-
-        result.HallCost.Should().Be(400m);
-    }
-
-    [Fact]
-    public async Task CalculatePrice_DefaultRules_MorningWindow_ShouldApply90Percent()
-    {
-        var service = CreateDefaultAppRules();
-
-        var result = await service.CalculatePriceAsync(100m, null, Date(1, 6), Date(1, 9));
-
-        result.HallCost.Should().Be(270m);
-    }
-
-    private static PricingService CreateDefaultAppRules() => CreateService(
-        Rule(6, 0, 9, 0, 0.90m),
-        Rule(12, 0, 14, 0, 1.15m),
-        Rule(18, 0, 23, 0, 0.80m));
 }

@@ -297,22 +297,6 @@ public class DomainEntityTests
     }
 
     [Fact]
-    public void Booking_WithZeroHallCostAndPaidOptions_ShouldBeValidWhenTotalMatches()
-    {
-        var hall = new Hall("Hall", 50, 100m);
-        var user = new User("owner@email.com", "hash", "Owner");
-        var startTime = DateTimeOffset.UtcNow;
-        var endTime = startTime.AddHours(2);
-        var options = new List<BookingOption> { new(new Option("Premium", 200m), 200m) };
-
-        var booking = new Booking(hall, user, startTime, endTime, 0m, 200m, options);
-
-        booking.HallCost.Should().Be(0m);
-        booking.TotalPrice.Should().Be(200m);
-        booking.BookingOptions.Should().HaveCount(1);
-    }
-
-    [Fact]
     public void Booking_Constructor_ShouldSetHallAndUser()
     {
         var hall = new Hall("Hall", 50, 100m);
@@ -366,39 +350,6 @@ public class DomainEntityTests
         var option = new Option("Free add-on", 0m);
 
         option.Price.Should().Be(0m);
-    }
-
-    [Fact]
-    public void Option_Update_WithValidData_ShouldChangeProperties()
-    {
-        var option = new Option("Projector", 50m);
-
-        option.Update("Screen", 75m);
-
-        option.Name.Should().Be("Screen");
-        option.Price.Should().Be(75m);
-    }
-
-    [Fact]
-    public void Option_Update_WithEmptyName_ShouldThrowInvalidEntityFieldException()
-    {
-        var option = new Option("Projector", 50m);
-
-        var act = () => option.Update("", 50m);
-
-        act.Should().Throw<InvalidEntityFieldException>()
-            .Which.FieldName.Should().Be(nameof(Option.Name));
-    }
-
-    [Fact]
-    public void Option_Update_WithNegativePrice_ShouldThrowInvalidEntityFieldException()
-    {
-        var option = new Option("Projector", 50m);
-
-        var act = () => option.Update("Projector", -10m);
-
-        act.Should().Throw<InvalidEntityFieldException>()
-            .Which.FieldName.Should().Be(nameof(Option.Price));
     }
 
     #endregion

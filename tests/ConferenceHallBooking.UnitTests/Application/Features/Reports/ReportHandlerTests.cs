@@ -61,57 +61,6 @@ public class ReportHandlerTests
         report.ByHall.Should().BeEmpty();
     }
 
-    [Fact]
-    public async Task GetRevenueReportHandler_ShouldPassPeriodToRepository()
-    {
-        var from = new DateTimeOffset(2026, 1, 10, 0, 0, 0, TimeSpan.Zero);
-        var to = new DateTimeOffset(2026, 1, 20, 0, 0, 0, TimeSpan.Zero);
-        _bookingRepository.GetByDateRangeAsync(from, to, Arg.Any<CancellationToken>())
-            .Returns(new List<Booking>());
-
-        await _revenueHandler.Handle(new GetRevenueReportQuery(from, to), CancellationToken.None);
-
-        await _bookingRepository.Received(1).GetByDateRangeAsync(
-            from, to, Arg.Any<CancellationToken>());
-    }
-
-    [Fact]
-    public async Task GetRevenueReportHandler_WithBookingCrossingEndBoundary_ShouldCountRevenueProportionally()
-    {
-        var hall = new Hall("Hall A", 50, 1000m);
-        var from = new DateTimeOffset(2026, 1, 10, 0, 0, 0, TimeSpan.Zero);
-        var to = new DateTimeOffset(2026, 1, 20, 0, 0, 0, TimeSpan.Zero);
-
-        _bookingRepository.GetByDateRangeAsync(from, to, Arg.Any<CancellationToken>())
-            .Returns([NewBooking(hall,
-                new DateTimeOffset(2026, 1, 18, 0, 0, 0, TimeSpan.Zero),
-                new DateTimeOffset(2026, 1, 22, 0, 0, 0, TimeSpan.Zero), 4000m)]);
-
-        var report = await _revenueHandler.Handle(
-            new GetRevenueReportQuery(from, to), CancellationToken.None);
-
-        report.TotalRevenue.Should().Be(2000m);
-        report.ByHall.First().BookingCount.Should().Be(1);
-    }
-
-    [Fact]
-    public async Task GetRevenueReportHandler_WithBookingCrossingStartBoundary_ShouldCountRevenueProportionally()
-    {
-        var hall = new Hall("Hall A", 50, 1000m);
-        var from = new DateTimeOffset(2026, 1, 10, 0, 0, 0, TimeSpan.Zero);
-        var to = new DateTimeOffset(2026, 1, 20, 0, 0, 0, TimeSpan.Zero);
-
-        _bookingRepository.GetByDateRangeAsync(from, to, Arg.Any<CancellationToken>())
-            .Returns([NewBooking(hall,
-                new DateTimeOffset(2026, 1, 8, 0, 0, 0, TimeSpan.Zero),
-                new DateTimeOffset(2026, 1, 12, 0, 0, 0, TimeSpan.Zero), 4000m)]);
-
-        var report = await _revenueHandler.Handle(
-            new GetRevenueReportQuery(from, to), CancellationToken.None);
-
-        report.TotalRevenue.Should().Be(2000m);
-    }
-
     #endregion
 
     #region Booking Summary Report

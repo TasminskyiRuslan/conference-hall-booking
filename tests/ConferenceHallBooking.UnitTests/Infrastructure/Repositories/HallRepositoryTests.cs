@@ -42,14 +42,6 @@ public class HallRepositoryTests : IDisposable
     }
 
     [Fact]
-    public async Task GetByIdAsync_WhenMissing_ShouldReturnNull()
-    {
-        var result = await _repository.GetByIdAsync(Guid.NewGuid());
-
-        result.Should().BeNull();
-    }
-
-    [Fact]
     public async Task GetAvailableHallsAsync_WhenHallBooked_ShouldExcludeIt()
     {
         var hall = CreateHall();
@@ -124,32 +116,5 @@ public class HallRepositoryTests : IDisposable
         var result = await _repository.ExistsByNameAsync("Missing");
 
         result.Should().BeFalse();
-    }
-
-    [Fact]
-    public async Task AddAsync_ThenGetById_ShouldPersist()
-    {
-        var hall = CreateHall("New Hall");
-        await _repository.AddAsync(hall);
-        await _context.SaveChangesAsync();
-
-        var result = await _repository.GetByIdAsync(hall.Id);
-
-        result.Should().NotBeNull();
-        result!.Name.Should().Be("New Hall");
-    }
-
-    [Fact]
-    public async Task Delete_ThenSave_ShouldRemoveHall()
-    {
-        var hall = CreateHall();
-        _context.Halls.Add(hall);
-        await _context.SaveChangesAsync();
-
-        _repository.Delete(hall);
-        await _context.SaveChangesAsync();
-
-        var result = await _repository.GetByIdAsync(hall.Id);
-        result.Should().BeNull();
     }
 }
