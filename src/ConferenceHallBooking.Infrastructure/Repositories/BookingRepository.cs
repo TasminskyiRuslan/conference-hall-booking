@@ -40,7 +40,7 @@ public class BookingRepository(AppDbContext context) : IBookingRepository
             .CountAsync(b => b.HallId == hallId, cancellationToken);
     }
 
-    /// <summary>Gets bookings that start within the given date range.</summary>
+    /// <summary>Gets bookings that overlap the given half-open date range.</summary>
     public async Task<IReadOnlyList<Booking>> GetByDateRangeAsync(
         DateTimeOffset from,
         DateTimeOffset to,

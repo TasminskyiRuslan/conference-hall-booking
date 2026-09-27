@@ -41,7 +41,7 @@ public class HallRepository(AppDbContext context) : IHallRepository
             .ToListAsync(cancellationToken);
     }
 
-    /// <summary>Gets halls that have any booking within the given range.</summary>
+    /// <summary>Gets all halls, loading only the bookings that overlap the given half-open range.</summary>
     public async Task<IReadOnlyList<Hall>> GetHallsWithBookingsInRangeAsync(
         DateTimeOffset from,
         DateTimeOffset to,
