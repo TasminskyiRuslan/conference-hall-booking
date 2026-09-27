@@ -42,13 +42,4 @@ public class UnitOfWorkTests : IDisposable
 
         affected.Should().Be(0);
     }
-
-    [Fact]
-    public void ExecuteInTransactionAsync_OnInMemoryProvider_ShouldThrowNotSupported()
-    {
-        // InMemory does not support transactions; covered by integration tests on PostgreSQL.
-        var act = async () => await _unitOfWork.ExecuteInTransactionAsync(_ => Task.CompletedTask);
-
-        act.Should().ThrowAsync<Exception>();
-    }
 }
