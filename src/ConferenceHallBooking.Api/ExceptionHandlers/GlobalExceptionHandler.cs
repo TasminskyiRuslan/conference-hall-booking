@@ -1,7 +1,6 @@
 using ConferenceHallBooking.Domain.Exceptions;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace ConferenceHallBooking.Api.ExceptionHandlers;
 
@@ -87,21 +86,6 @@ public class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logger) : IE
                 traceId,
                 [("errorCode", bookedEx.ErrorCode)]),
 
-            // PostgreSQL EXCLUDE constraint (no overlapping bookings) — SQLSTATE 23P01.
-            DbUpdateException dbEx when IsExclusionViolation(dbEx) => CreateProblemDetails(
-                StatusCodes.Status409Conflict,
-                "Conflict",
-                "The hall is already booked for an overlapping time slot.",
-                traceId,
-                [("errorCode", "HALL_ALREADY_BOOKED")]),
-
-            DbUpdateException => CreateProblemDetails(
-                StatusCodes.Status409Conflict,
-                "Conflict",
-                "A resource with the same unique constraint already exists.",
-                traceId,
-                [("errorCode", "UNIQUE_CONSTRAINT_VIOLATION")]),
-
             BusinessRuleException businessEx => CreateProblemDetails(
                 StatusCodes.Status409Conflict,
                 "Business rule violation",
@@ -155,19 +139,6 @@ public class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logger) : IE
         }
 
         return problemDetails;
-    }
-
-    private static bool IsExclusionViolation(DbUpdateException exception)
-    {
-        for (var ex = exception as Exception; ex is not null; ex = ex.InnerException)
-        {
-            if (ex is Npgsql.PostgresException { SqlState: Npgsql.PostgresErrorCodes.ExclusionViolation })
-            {
-                return true;
-            }
-        }
-
-        return false;
     }
 
     private void LogException(Exception exception, int statusCode)
