@@ -118,7 +118,8 @@ public class DbInitializer(
             return;
         }
 
-        if (await context.Users.AnyAsync(u => u.Email == email, cancellationToken))
+        var normalizedEmail = email.ToLower();
+        if (await context.Users.AnyAsync(u => u.Email.ToLower() == normalizedEmail, cancellationToken))
         {
             return;
         }
