@@ -37,7 +37,14 @@ public class AuthService(
         var user = new User(command.Email, passwordHash, command.FullName);
 
         await userRepository.AddAsync(user, cancellationToken);
-        await unitOfWork.SaveChangesAsync(cancellationToken);
+        try
+        {
+            await unitOfWork.SaveChangesAsync(cancellationToken);
+        }
+        catch (UniqueConstraintViolationException)
+        {
+            throw new EmailAlreadyExistsException(command.Email);
+        }
 
         var token = GenerateJwtToken(user);
         return new AuthResponse(user.Id, user.Email, user.FullName, user.Role.ToString(), token);
