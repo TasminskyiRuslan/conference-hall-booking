@@ -1,4 +1,6 @@
+using System.Reflection;
 using System.Text;
+using System.Threading.RateLimiting;
 using ConferenceHallBooking.Api.Authorization;
 using ConferenceHallBooking.Api.ExceptionHandlers;
 using ConferenceHallBooking.Application.Configuration;
@@ -6,8 +8,10 @@ using ConferenceHallBooking.Application.Interfaces;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -63,9 +67,57 @@ builder.Services.AddCors(options =>
 
 builder.Services.AddSingleton<IAuthorizationMiddlewareResultHandler, ProblemDetailsAuthorizationHandler>();
 
+var authRateLimitSection = builder.Configuration.GetSection("RateLimiting:Auth");
+var rateLimitingEnabled = builder.Configuration.GetValue("RateLimiting:Enabled", true);
+
+builder.Services.AddRateLimiter(options =>
+{
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+    options.AddFixedWindowLimiter("auth", limiterOptions =>
+    {
+        limiterOptions.PermitLimit = rateLimitingEnabled
+            ? authRateLimitSection.GetValue("PermitLimit", 10)
+            : int.MaxValue;
+        limiterOptions.Window = TimeSpan.FromMinutes(authRateLimitSection.GetValue("WindowMinutes", 15));
+        limiterOptions.QueueLimit = 0;
+    });
+});
+
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(c =>
+{
+    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Name = "Authorization",
+        Type = SecuritySchemeType.Http,
+        Scheme = "Bearer",
+        BearerFormat = "JWT",
+        In = ParameterLocation.Header,
+        Description = "Enter your JWT token"
+    });
+    c.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            Array.Empty<string>()
+        }
+    });
+
+    var xmlFile = $"{Assembly.GetEntryAssembly()?.GetName().Name}.xml";
+    var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+    if (File.Exists(xmlPath))
+    {
+        c.IncludeXmlComments(xmlPath);
+    }
+});
 
 var app = builder.Build();
 
@@ -120,6 +172,7 @@ app.UseCors("Frontend");
 
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseRateLimiter();
 
 app.MapControllers();
 
