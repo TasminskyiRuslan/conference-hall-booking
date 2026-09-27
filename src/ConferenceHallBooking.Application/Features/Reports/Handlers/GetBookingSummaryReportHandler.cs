@@ -33,6 +33,7 @@ public class GetBookingSummaryReportHandler(IBookingRepository bookingRepository
             .GroupBy(b => b.StartTime.Hour)
             .Select(g => new PopularTimeSlot(g.Key, g.Count()))
             .OrderByDescending(s => s.BookingCount)
+            .ThenBy(s => s.Hour)
             .Take(10)
             .ToList();
 
@@ -41,6 +42,7 @@ public class GetBookingSummaryReportHandler(IBookingRepository bookingRepository
             .GroupBy(bo => new { bo.OptionId, bo.Option.Name })
             .Select(g => new PopularOption(g.Key.OptionId, g.Key.Name, g.Count()))
             .OrderByDescending(s => s.BookingCount)
+            .ThenBy(s => s.Name)
             .Take(10)
             .ToList();
 
