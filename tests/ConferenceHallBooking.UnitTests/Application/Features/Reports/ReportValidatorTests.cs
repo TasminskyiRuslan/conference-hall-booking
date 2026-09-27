@@ -82,4 +82,37 @@ public class ReportValidatorTests
 
         result.ShouldHaveValidationErrorFor(x => x.To);
     }
+
+    [Fact]
+    public async Task Validate_RevenueReport_WhenStartInFuture_ShouldHaveError()
+    {
+        var start = DateTimeOffset.UtcNow.AddDays(1);
+        var query = new GetRevenueReportQuery(start, start.AddDays(1));
+
+        var result = await _revenueValidator.TestValidateAsync(query);
+
+        result.ShouldHaveValidationErrorFor(x => x.From);
+    }
+
+    [Fact]
+    public async Task Validate_UtilizationReport_WhenStartInFuture_ShouldHaveError()
+    {
+        var start = DateTimeOffset.UtcNow.AddDays(1);
+        var query = new GetHallUtilizationReportQuery(start, start.AddDays(1));
+
+        var result = await _utilizationValidator.TestValidateAsync(query);
+
+        result.ShouldHaveValidationErrorFor(x => x.From);
+    }
+
+    [Fact]
+    public async Task Validate_SummaryReport_WhenStartInFuture_ShouldHaveError()
+    {
+        var start = DateTimeOffset.UtcNow.AddDays(1);
+        var query = new GetBookingSummaryReportQuery(start, start.AddDays(1));
+
+        var result = await _summaryValidator.TestValidateAsync(query);
+
+        result.ShouldHaveValidationErrorFor(x => x.From);
+    }
 }

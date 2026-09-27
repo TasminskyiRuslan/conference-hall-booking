@@ -211,6 +211,102 @@ public class ReportHandlerTests
         report.PopularOptions.First().BookingCount.Should().Be(2);
     }
 
+    [Fact]
+    public async Task GetBookingSummaryReportHandler_ShouldReturnAtMostTenPopularTimeSlots()
+    {
+        var hall = new Hall("Hall A", 50, 1000m);
+        var from = new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero);
+        var to = new DateTimeOffset(2026, 2, 1, 0, 0, 0, TimeSpan.Zero);
+
+        var bookings = new List<Booking>();
+        for (var hour = 0; hour < 11; hour++)
+        {
+            bookings.Add(NewBooking(
+                hall, from.AddDays(1).AddHours(hour), from.AddDays(1).AddHours(hour + 1), 1000m));
+        }
+        _bookingRepository.GetByDateRangeAsync(from, to, Arg.Any<CancellationToken>())
+            .Returns(bookings);
+
+        var report = await _summaryHandler.Handle(
+            new GetBookingSummaryReportQuery(from, to), CancellationToken.None);
+
+        report.PopularTimeSlots.Should().HaveCount(10);
+    }
+
+    [Fact]
+    public async Task GetBookingSummaryReportHandler_TimeSlotsWithEqualCounts_ShouldOrderByHour()
+    {
+        var hall = new Hall("Hall A", 50, 1000m);
+        var from = new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero);
+        var to = new DateTimeOffset(2026, 2, 1, 0, 0, 0, TimeSpan.Zero);
+
+        var bookings = new List<Booking>();
+        foreach (var hour in new[] { 20, 8, 14 })
+        {
+            bookings.Add(NewBooking(
+                hall, from.AddDays(1).AddHours(hour), from.AddDays(1).AddHours(hour + 1), 1000m));
+            bookings.Add(NewBooking(
+                hall, from.AddDays(2).AddHours(hour), from.AddDays(2).AddHours(hour + 1), 1000m));
+        }
+        _bookingRepository.GetByDateRangeAsync(from, to, Arg.Any<CancellationToken>())
+            .Returns(bookings);
+
+        var report = await _summaryHandler.Handle(
+            new GetBookingSummaryReportQuery(from, to), CancellationToken.None);
+
+        report.PopularTimeSlots.Select(s => s.Hour).Should().Equal(8, 14, 20);
+    }
+
+    [Fact]
+    public async Task GetBookingSummaryReportHandler_OptionsWithEqualCounts_ShouldOrderByName()
+    {
+        var hall = new Hall("Hall A", 50, 1000m);
+        var zeta = new Option("Zeta", 50m);
+        var alpha = new Option("Alpha", 50m);
+        var mid = new Option("Mid", 50m);
+        var user = NewUser();
+        var from = new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero);
+        var to = new DateTimeOffset(2026, 2, 1, 0, 0, 0, TimeSpan.Zero);
+
+        var bookings = new List<Booking>
+        {
+            new(hall, user, from.AddDays(1), from.AddDays(1).AddHours(2), 100m, 250m,
+                [
+                    new BookingOption(zeta, 50m),
+                    new BookingOption(alpha, 50m),
+                    new BookingOption(mid, 50m)
+                ])
+        };
+        _bookingRepository.GetByDateRangeAsync(from, to, Arg.Any<CancellationToken>())
+            .Returns(bookings);
+
+        var report = await _summaryHandler.Handle(
+            new GetBookingSummaryReportQuery(from, to), CancellationToken.None);
+
+        report.PopularOptions.Select(o => o.Name).Should().Equal("Alpha", "Mid", "Zeta");
+    }
+
+    [Fact]
+    public async Task GetBookingSummaryReportHandler_MidpointDuration_ShouldRoundAwayFromZero()
+    {
+        var hall = new Hall("Hall A", 50, 1000m);
+        var from = new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero);
+        var to = new DateTimeOffset(2026, 2, 1, 0, 0, 0, TimeSpan.Zero);
+
+        var bookings = new List<Booking>
+        {
+            NewBooking(hall, from.AddDays(1), from.AddDays(1).AddMinutes(6), 1000m),
+            NewBooking(hall, from.AddDays(2), from.AddDays(2).AddMinutes(9), 1000m)
+        };
+        _bookingRepository.GetByDateRangeAsync(from, to, Arg.Any<CancellationToken>())
+            .Returns(bookings);
+
+        var report = await _summaryHandler.Handle(
+            new GetBookingSummaryReportQuery(from, to), CancellationToken.None);
+
+        report.AverageBookingDurationHours.Should().Be(0.13m);
+    }
+
     #endregion
 
     private static User NewUser() => new("tester@example.com", "fake-hash", "Tester");

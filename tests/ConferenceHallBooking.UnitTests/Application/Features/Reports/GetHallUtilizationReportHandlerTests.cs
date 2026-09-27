@@ -93,6 +93,40 @@ public class GetHallUtilizationReportHandlerTests : IDisposable
         report.Halls.Last().HallId.Should().Be(hallA.Id);
     }
 
+    [Fact]
+    public async Task GetUtilizationReportHandler_HallWithoutBookings_ShouldReportZeroUtilization()
+    {
+        var bookedHall = SeedHall("Booked", 50, 1000m);
+        var emptyHall = SeedHall("Empty", 50, 1000m);
+        var from = new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero);
+        var to = new DateTimeOffset(2026, 1, 8, 0, 0, 0, TimeSpan.Zero);
+
+        SeedBooking(bookedHall, from.AddDays(1), from.AddDays(2), 1000m);
+
+        var report = await _utilizationHandler.Handle(
+            new GetHallUtilizationReportQuery(from, to), CancellationToken.None);
+
+        report.Halls.Should().HaveCount(2);
+        var empty = report.Halls.Single(h => h.HallId == emptyHall.Id);
+        empty.BookedHours.Should().Be(0);
+        empty.UtilizationPercent.Should().Be(0);
+    }
+
+    [Fact]
+    public async Task GetUtilizationReportHandler_MidpointPercent_ShouldRoundAwayFromZero()
+    {
+        var hall = SeedHall("Hall A", 50, 1000m);
+        var from = new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero);
+        var to = from.AddHours(16);
+
+        SeedBooking(hall, from.AddHours(1), from.AddHours(2), 1000m);
+
+        var report = await _utilizationHandler.Handle(
+            new GetHallUtilizationReportQuery(from, to), CancellationToken.None);
+
+        report.Halls.Single().UtilizationPercent.Should().Be(6.3m);
+    }
+
     private Hall SeedHall(string name, int capacity, decimal rate)
     {
         var hall = new Hall(name, capacity, rate);
