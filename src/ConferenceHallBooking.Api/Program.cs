@@ -5,6 +5,7 @@ using ConferenceHallBooking.Api.Authorization;
 using ConferenceHallBooking.Api.ExceptionHandlers;
 using ConferenceHallBooking.Application.Configuration;
 using ConferenceHallBooking.Application.Interfaces;
+using ConferenceHallBooking.Infrastructure.Data;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -85,6 +86,8 @@ builder.Services.AddRateLimiter(options =>
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddHealthChecks()
+    .AddDbContextCheck<AppDbContext>();
 builder.Services.AddSwaggerGen(c =>
 {
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
@@ -173,6 +176,8 @@ app.UseCors("Frontend");
 app.UseAuthentication();
 app.UseAuthorization();
 app.UseRateLimiter();
+
+app.MapHealthChecks("/health");
 
 app.MapControllers();
 
