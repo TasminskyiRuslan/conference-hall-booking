@@ -31,15 +31,15 @@ public class GetHallUtilizationReportHandler(IHallRepository hallRepository)
 
             bookedHours = Math.Max(0, Math.Min(bookedHours, periodHours));
             var utilizationPercent = periodHours > 0
-                ? Math.Round(bookedHours / periodHours * 100, 1)
+                ? Math.Round(bookedHours / periodHours * 100, 1, MidpointRounding.AwayFromZero)
                 : 0;
 
             return new HallUtilization(
                 h.Id,
                 h.Name,
                 h.Capacity,
-                Math.Round(bookedHours, 2),
-                Math.Round(Math.Max(0, periodHours - bookedHours), 2),
+                Math.Round(bookedHours, 2, MidpointRounding.AwayFromZero),
+                Math.Round(Math.Max(0, periodHours - bookedHours), 2, MidpointRounding.AwayFromZero),
                 utilizationPercent);
         })
         .OrderByDescending(h => h.UtilizationPercent)

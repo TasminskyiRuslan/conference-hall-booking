@@ -22,11 +22,11 @@ public class GetBookingSummaryReportHandler(IBookingRepository bookingRepository
         var totalRevenue = bookings.Sum(b => ReportCalculations.ProportionalRevenue(b, request.From, request.To));
 
         var avgDuration = totalBookings > 0
-            ? Math.Round(bookings.Average(b => (b.EndTime - b.StartTime).TotalHours), 2)
+            ? Math.Round(bookings.Average(b => (b.EndTime - b.StartTime).TotalHours), 2, MidpointRounding.AwayFromZero)
             : 0;
 
         var avgRevenue = totalBookings > 0
-            ? Math.Round(totalRevenue / totalBookings, 2)
+            ? Math.Round(totalRevenue / totalBookings, 2, MidpointRounding.AwayFromZero)
             : 0;
 
         var popularTimeSlots = bookings
