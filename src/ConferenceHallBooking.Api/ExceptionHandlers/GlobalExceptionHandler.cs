@@ -109,12 +109,6 @@ public class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logger) : IE
                 traceId,
                 [("errorCode", businessEx.ErrorCode)]),
 
-            UnauthorizedAccessException unauthorizedEx => CreateProblemDetails(
-                StatusCodes.Status401Unauthorized,
-                "Unauthorized",
-                unauthorizedEx.Message,
-                traceId),
-
             _ => CreateProblemDetails(
                 StatusCodes.Status500InternalServerError,
                 "Internal server error",
