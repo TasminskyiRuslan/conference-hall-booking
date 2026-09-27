@@ -31,8 +31,11 @@ public class ProblemDetailsAuthorizationHandler : IAuthorizationMiddlewareResult
             };
 
             context.Response.StatusCode = StatusCodes.Status403Forbidden;
-            context.Response.ContentType = "application/problem+json";
-            await context.Response.WriteAsJsonAsync(problemDetails, context.RequestAborted);
+            await context.Response.WriteAsJsonAsync(
+                problemDetails,
+                options: null,
+                contentType: "application/problem+json",
+                cancellationToken: context.RequestAborted);
             return;
         }
 
