@@ -86,7 +86,6 @@ public class DbInitializer(
 
         await context.Options.AddRangeAsync([projector, wifi, sound], cancellationToken);
         await context.Halls.AddRangeAsync([hallA, hallB, hallC], cancellationToken);
-        await context.SaveChangesAsync(cancellationToken);
 
         hallA.AddOption(projector);
         hallA.AddOption(wifi);
