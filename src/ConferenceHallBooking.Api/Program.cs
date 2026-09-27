@@ -5,6 +5,8 @@ using ConferenceHallBooking.Application.Configuration;
 using ConferenceHallBooking.Application.Interfaces;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -62,6 +64,38 @@ if (app.Configuration.GetValue("Database:AutoMigrateAndSeed", false))
 }
 
 app.UseExceptionHandler();
+
+app.UseStatusCodePages(async statusContext =>
+{
+    var response = statusContext.HttpContext.Response;
+    var request = statusContext.HttpContext.Request;
+    var statusCode = response.StatusCode;
+
+    if (response.HasStarted || statusCode < 400 || HttpMethods.IsHead(request.Method))
+    {
+        return;
+    }
+
+    var problemDetails = new ProblemDetails
+    {
+        Type = "https://tools.ietf.org/html/rfc7807",
+        Status = statusCode,
+        Title = ReasonPhrases.GetReasonPhrase(statusCode),
+        Detail = statusCode switch
+        {
+            StatusCodes.Status401Unauthorized => "Authentication was required but no valid credentials were provided.",
+            StatusCodes.Status404NotFound => "The requested resource was not found.",
+            _ => $"The server produced no content for status code {statusCode}."
+        },
+        Extensions = { ["traceId"] = statusContext.HttpContext.TraceIdentifier }
+    };
+
+    await response.WriteAsJsonAsync(
+        problemDetails,
+        options: null,
+        contentType: "application/problem+json",
+        cancellationToken: statusContext.HttpContext.RequestAborted);
+});
 
 if (app.Environment.IsDevelopment())
 {
