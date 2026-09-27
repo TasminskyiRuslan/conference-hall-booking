@@ -14,8 +14,8 @@ namespace ConferenceHallBooking.Infrastructure.Migrations
             migrationBuilder.Sql("CREATE EXTENSION IF NOT EXISTS btree_gist;");
 
             migrationBuilder.Sql("""
-                // Equal HallId and disjoint ranges must hold simultaneously. '[)' allows
-                // back-to-back bookings (one ends exactly when the next starts), no overlap.
+                -- Equal HallId and disjoint ranges must hold simultaneously. '[)' allows
+                -- back-to-back bookings (one ends exactly when the next starts), no overlap.
                 ALTER TABLE "Bookings" ADD CONSTRAINT "Bookings_NoOverlap"
                 EXCLUDE USING gist (
                     "HallId" WITH =,
