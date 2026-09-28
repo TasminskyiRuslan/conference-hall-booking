@@ -74,6 +74,16 @@ var rateLimitingEnabled = builder.Configuration.GetValue("RateLimiting:Enabled",
 builder.Services.AddRateLimiter(options =>
 {
     options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+    options.OnRejected = (rejectedContext, _) =>
+    {
+        if (rejectedContext.Lease.TryGetMetadata(MetadataName.RetryAfter, out var retryAfter))
+        {
+            rejectedContext.HttpContext.Response.Headers["Retry-After"] =
+                ((int)Math.Ceiling(retryAfter.TotalSeconds)).ToString();
+        }
+
+        return ValueTask.CompletedTask;
+    };
 
     var authFixedWindowOptions = new FixedWindowRateLimiterOptions
     {
