@@ -154,6 +154,59 @@ public class BookingOverlapTests
         }
     }
 
+    [Fact]
+    public async Task BackToBackCreateBooking_WhenAdjacentSlots_BothSucceed()
+    {
+        if (!PostgresTestDatabase.Enabled)
+        {
+            return;
+        }
+
+        await PostgresTestDatabase.EnsureMigratedAsync();
+
+        var stamp = Guid.NewGuid().ToString("N")[..8];
+        Guid hallId;
+        Guid userId;
+
+        await using (var setupContext = PostgresTestDatabase.CreateContext())
+        {
+            var hall = new Hall($"Back-to-back test hall {stamp}", 10, 100m);
+            var user = new User($"backtoback.{stamp}@test.local", "hash", "Back To Back Tester");
+            setupContext.Halls.Add(hall);
+            setupContext.Users.Add(user);
+            await setupContext.SaveChangesAsync();
+            hallId = hall.Id;
+            userId = user.Id;
+        }
+
+        try
+        {
+            await using var context = PostgresTestDatabase.CreateContext();
+            var handler = new CreateBookingCommandHandler(
+                new BookingRepository(context),
+                new HallRepository(context),
+                new OptionRepository(context),
+                new UserRepository(context),
+                new PricingService(new PricingRuleRepository(context)),
+                new UnitOfWork(context));
+
+            var first = new CreateBookingCommand(hallId, userId, SlotStart, 2m, null);
+            var second = new CreateBookingCommand(hallId, userId, SlotStart.AddHours(2), 2m, null);
+
+            Func<Task> bookFirst = () => handler.Handle(first, CancellationToken.None);
+            await bookFirst.Should().NotThrowAsync(
+                "the [10:00,12:00) booking must be accepted");
+
+            Func<Task> bookSecond = () => handler.Handle(second, CancellationToken.None);
+            await bookSecond.Should().NotThrowAsync(
+                "the back-to-back [12:00,14:00) booking must not be treated as an overlap");
+        }
+        finally
+        {
+            await CleanupAsync(hallId, userId);
+        }
+    }
+
     private static bool ContainsExclusionViolation(Exception exception)
     {
         for (var current = exception; current is not null; current = current.InnerException)
