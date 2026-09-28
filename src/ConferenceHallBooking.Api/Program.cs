@@ -142,6 +142,12 @@ builder.Services.AddSwaggerGen(c =>
     {
         c.IncludeXmlComments(xmlPath);
     }
+
+    var appXmlPath = Path.Combine(AppContext.BaseDirectory, "ConferenceHallBooking.Application.xml");
+    if (File.Exists(appXmlPath))
+    {
+        c.IncludeXmlComments(appXmlPath);
+    }
 });
 
 var app = builder.Build();

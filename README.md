@@ -23,7 +23,7 @@ REST API for managing conference hall bookings — .NET 8, Clean Architecture, C
 | `src/ConferenceHallBooking.Application` | commands/queries and handlers (MediatR), FluentValidation, DTOs, mappers, pricing |
 | `src/ConferenceHallBooking.Domain` | entities, invariants, domain exceptions |
 | `src/ConferenceHallBooking.Infrastructure` | EF Core 8 + Npgsql, repositories, unit of work, JWT/BCrypt services, migrations, seed |
-| `tests/ConferenceHallBooking.UnitTests` | hermetic xUnit suite (InMemory, NSubstitute) — 249 tests |
+| `tests/ConferenceHallBooking.UnitTests` | hermetic xUnit suite (InMemory, NSubstitute) — 266 tests |
 | `tests/ConferenceHallBooking.PostgresTests` | live-PostgreSQL overlap and concurrency tests (3 tests, gated by `POSTGRES_TEST_CONNECTION`) |
 
 ## Getting Started
@@ -44,7 +44,9 @@ docker compose up -d --build
 docker compose run --rm api --migrate    # apply migrations + seed, then exits
 ```
 
-Open `http://localhost:8080` — Swagger UI at `/swagger`, health at `/health`
+Open `http://localhost:8080` - health at `/health` (`Healthy` once migrated).
+Swagger UI at `/swagger` is served only in the `Development` environment
+(the local run profile; the Docker image runs `Production` without it).
 (`Healthy` once migrated).
 
 Migrations are never applied automatically; `--migrate` is the single migration entry
@@ -86,7 +88,7 @@ $env:POSTGRES_TEST_CONNECTION = 'Host=localhost;Port=5433;Database=conference_bo
 dotnet test ConferenceHallBooking.slnx
 ```
 
-Totals: **252 tests** = 249 unit + 3 live.
+Totals: **269 tests** = 266 unit + 3 live.
 
 ## Configuration
 
@@ -104,7 +106,12 @@ Totals: **252 tests** = 249 unit + 3 live.
 | `PricingSettings:TimeZoneId` | вЂ” | `Europe/Kyiv` вЂ” tariff windows and multipliers are evaluated in this timezone |
 | — | `POSTGRES_PORT` / `API_PORT` | `5433` / `8080` (compose) |
 | — | `ASPNETCORE_ENVIRONMENT` | `Production` (compose) |
-| — | `POSTGRES_TEST_CONNECTION` | unset — live tests are skipped |
+| — | `POSTGRES_TEST_CONNECTION` | unset — live tests run as a no-op (they pass without a database) |
+
+> **Reverse proxy:** ForwardedHeaders middleware is intentionally not enabled, so the
+> app always sees the direct peer IP. Behind a reverse proxy the auth rate limiter
+> partitions by the proxy IP (one shared bucket for all clients) - keep the API
+> directly reachable, or account for shared-IP limiting when proxying.
 
 ## Roles
 

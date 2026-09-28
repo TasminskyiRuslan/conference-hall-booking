@@ -15,6 +15,8 @@ namespace ConferenceHallBooking.Api.Controllers;
 [ApiController]
 [Route("api/[controller]")]
 [EnableRateLimiting("auth")]
+[ResponseCache(NoStore = true)]
+[ProducesResponseType(StatusCodes.Status429TooManyRequests)]
 public class AuthController(ISender sender) : ControllerBase
 {
     /// <summary>

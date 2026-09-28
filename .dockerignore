@@ -1,7 +1,8 @@
 **/bin/
 **/obj/
 .git/
-.vs/
+**/.vs/
+**/*.csproj.user
 tests/
 **/Properties/launchSettings.json
 **/appsettings.Development.json

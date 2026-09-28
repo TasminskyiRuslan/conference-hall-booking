@@ -11,6 +11,7 @@ namespace ConferenceHallBooking.Application.Features.Reports.Handlers;
 public class GetBookingSummaryReportHandler(IBookingRepository bookingRepository)
     : IRequestHandler<GetBookingSummaryReportQuery, BookingSummaryReport>
 {
+    private const int PopularSlotsTopCount = 10;
     /// <summary>Sums totals, averages and popularity leaders for bookings in the period.</summary>
     public async Task<BookingSummaryReport> Handle(
         GetBookingSummaryReportQuery request, CancellationToken cancellationToken)
@@ -34,7 +35,7 @@ public class GetBookingSummaryReportHandler(IBookingRepository bookingRepository
             .Select(g => new PopularTimeSlot(g.Key, g.Count()))
             .OrderByDescending(s => s.BookingCount)
             .ThenBy(s => s.Hour)
-            .Take(10)
+            .Take(PopularSlotsTopCount)
             .ToList();
 
         var popularOptions = bookings
@@ -43,7 +44,7 @@ public class GetBookingSummaryReportHandler(IBookingRepository bookingRepository
             .Select(g => new PopularOption(g.Key.OptionId, g.Key.Name, g.Count()))
             .OrderByDescending(s => s.BookingCount)
             .ThenBy(s => s.Name)
-            .Take(10)
+            .Take(PopularSlotsTopCount)
             .ToList();
 
         return new BookingSummaryReport(

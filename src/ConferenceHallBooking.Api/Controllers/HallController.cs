@@ -14,6 +14,8 @@ namespace ConferenceHallBooking.Api.Controllers;
 [ApiController]
 [Route("api/[controller]")]
 [Authorize]
+[ProducesResponseType(StatusCodes.Status401Unauthorized)]
+[ProducesResponseType(StatusCodes.Status403Forbidden)]
 public class HallController(ISender sender) : ControllerBase
 {
     /// <summary>
