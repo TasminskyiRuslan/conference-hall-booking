@@ -28,6 +28,7 @@ public class DbInitializer(
             await SeedAdminAsync(cancellationToken);
             await SeedPricingRulesAsync(cancellationToken);
             await SeedHallsAndOptionsAsync(cancellationToken);
+            await context.SaveChangesAsync(cancellationToken);
         }
         catch (Exception ex)
         {
@@ -60,7 +61,6 @@ public class DbInitializer(
             .ToList();
 
         await context.PricingRules.AddRangeAsync(rules, cancellationToken);
-        await context.SaveChangesAsync(cancellationToken);
 
         logger.LogInformation("Seeded {Count} pricing rule(s) from configuration.", rules.Count);
     }
@@ -98,8 +98,6 @@ public class DbInitializer(
         hallC.AddOption(wifi);
         hallC.AddOption(sound);
 
-        await context.SaveChangesAsync(cancellationToken);
-
         logger.LogInformation("Halls and options seeded successfully.");
     }
 
@@ -127,7 +125,6 @@ public class DbInitializer(
         var admin = new User(normalizedEmail, passwordHash, "Administrator", UserRole.Admin);
 
         context.Users.Add(admin);
-        await context.SaveChangesAsync(cancellationToken);
 
         logger.LogInformation("Admin user '{Email}' seeded successfully.", email);
     }
