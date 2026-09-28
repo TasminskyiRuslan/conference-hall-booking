@@ -14,7 +14,6 @@ namespace ConferenceHallBooking.Api.Controllers;
 [ApiController]
 [Route("api/[controller]")]
 [Authorize]
-[Produces("application/json")]
 public class BookingController(ISender sender) : ControllerBase
 {
     /// <summary>

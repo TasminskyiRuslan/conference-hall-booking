@@ -270,6 +270,84 @@ public class GlobalExceptionHandlerTests
         body.Should().Contain("UNIQUE_CONSTRAINT_VIOLATION");
     }
 
+    [Fact]
+    public async Task TryHandleAsync_WithForeignKeyConstraintViolationException_ShouldReturn409WithErrorCode()
+    {
+        var context = CreateHttpContext();
+        var exception = new ForeignKeyConstraintViolationException(new InvalidOperationException("race"));
+
+        var result = await _sut.TryHandleAsync(context, exception, CancellationToken.None);
+
+        result.Should().BeTrue();
+        context.Response.StatusCode.Should().Be(409);
+
+        context.Response.Body.Seek(0, System.IO.SeekOrigin.Begin);
+        var body = await new System.IO.StreamReader(context.Response.Body).ReadToEndAsync();
+        body.Should().Contain("FOREIGN_KEY_VIOLATION");
+    }
+
+    [Fact]
+    public async Task TryHandleAsync_WithHallAlreadyBookedPaths_ShouldProduceIdenticalContracts()
+    {
+        var hallId = Guid.NewGuid();
+        var start = DateTimeOffset.UtcNow;
+        var end = start.AddHours(2);
+
+        var firstContext = CreateHttpContext();
+        await _sut.TryHandleAsync(
+            firstContext,
+            new HallAlreadyBookedException(hallId, start, end),
+            CancellationToken.None);
+
+        var secondContext = CreateHttpContext();
+        await _sut.TryHandleAsync(
+            secondContext,
+            new BookingOverlapException(new InvalidOperationException("race")),
+            CancellationToken.None);
+
+        firstContext.Response.Body.Seek(0, System.IO.SeekOrigin.Begin);
+        secondContext.Response.Body.Seek(0, System.IO.SeekOrigin.Begin);
+        var firstBody = await new System.IO.StreamReader(firstContext.Response.Body).ReadToEndAsync();
+        var secondBody = await new System.IO.StreamReader(secondContext.Response.Body).ReadToEndAsync();
+
+        var first = System.Text.Json.JsonDocument.Parse(firstBody).RootElement;
+        var second = System.Text.Json.JsonDocument.Parse(secondBody).RootElement;
+
+        first.GetProperty("title").GetString()
+            .Should().Be(second.GetProperty("title").GetString());
+        first.GetProperty("errorCode").GetString().Should().Be("HALL_ALREADY_BOOKED");
+        second.GetProperty("errorCode").GetString().Should().Be("HALL_ALREADY_BOOKED");
+    }
+
+    [Fact]
+    public async Task TryHandleAsync_WithClientDisconnect_ShouldSkipWithoutWriting()
+    {
+        var context = CreateHttpContext();
+        context.RequestAborted = new CancellationToken(canceled: true);
+
+        var result = await _sut.TryHandleAsync(
+            context,
+            new OperationCanceledException(),
+            CancellationToken.None);
+
+        result.Should().BeTrue();
+        context.Response.StatusCode.Should().Be(200);
+    }
+
+    [Fact]
+    public async Task TryHandleAsync_WithOperationCanceledWithoutAbort_ShouldReturn500()
+    {
+        var context = CreateHttpContext();
+
+        var result = await _sut.TryHandleAsync(
+            context,
+            new OperationCanceledException(),
+            CancellationToken.None);
+
+        result.Should().BeTrue();
+        context.Response.StatusCode.Should().Be(500);
+    }
+
     private static HttpContext CreateHttpContext()
     {
         var context = new DefaultHttpContext();

@@ -31,6 +31,11 @@ public class UnitOfWork(AppDbContext context) : IUnitOfWork
                 throw new UniqueConstraintViolationException(ex);
             }
 
+            if (postgresException?.SqlState == PostgresErrorCodes.ForeignKeyViolation)
+            {
+                throw new ForeignKeyConstraintViolationException(ex);
+            }
+
             throw;
         }
     }

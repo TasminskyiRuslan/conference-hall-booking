@@ -17,6 +17,12 @@ public class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logger) : IE
         Exception exception,
         CancellationToken cancellationToken)
     {
+        if (exception is OperationCanceledException
+            && httpContext.RequestAborted.IsCancellationRequested)
+        {
+            return true;
+        }
+
         var traceId = httpContext.TraceIdentifier;
 
         var problemDetails = exception switch
@@ -65,13 +71,6 @@ public class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logger) : IE
                 credentialsEx.Message,
                 traceId,
                 [("errorCode", credentialsEx.ErrorCode)]),
-
-            HallAlreadyBookedException bookedEx => CreateProblemDetails(
-                StatusCodes.Status409Conflict,
-                "Conflict",
-                bookedEx.Message,
-                traceId,
-                [("errorCode", bookedEx.ErrorCode)]),
 
             BusinessRuleException businessEx => CreateProblemDetails(
                 StatusCodes.Status409Conflict,

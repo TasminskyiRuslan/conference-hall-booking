@@ -14,7 +14,6 @@ namespace ConferenceHallBooking.Api.Controllers;
 /// </summary>
 [ApiController]
 [Route("api/[controller]")]
-[Produces("application/json")]
 [EnableRateLimiting("auth")]
 public class AuthController(ISender sender) : ControllerBase
 {

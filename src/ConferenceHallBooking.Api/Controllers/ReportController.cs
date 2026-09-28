@@ -13,7 +13,6 @@ namespace ConferenceHallBooking.Api.Controllers;
 [ApiController]
 [Route("api/[controller]")]
 [Authorize]
-[Produces("application/json")]
 public class ReportController(ISender sender) : ControllerBase
 {
     /// <summary>
