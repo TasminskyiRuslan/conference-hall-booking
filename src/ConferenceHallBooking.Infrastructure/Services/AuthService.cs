@@ -28,13 +28,14 @@ public class AuthService(
     public async Task<AuthResponse> RegisterAsync(
         RegisterCommand command, CancellationToken cancellationToken = default)
     {
-        if (await userRepository.ExistsByEmailAsync(command.Email, cancellationToken))
+        var email = command.Email.ToLowerInvariant();
+        if (await userRepository.ExistsByEmailAsync(email, cancellationToken))
         {
             throw new EmailAlreadyExistsException(command.Email);
         }
 
         var passwordHash = BCrypt.Net.BCrypt.HashPassword(command.Password);
-        var user = new User(command.Email, passwordHash, command.FullName);
+        var user = new User(email, passwordHash, command.FullName);
 
         await userRepository.AddAsync(user, cancellationToken);
         try
@@ -54,7 +55,8 @@ public class AuthService(
     public async Task<AuthResponse> LoginAsync(
         LoginCommand command, CancellationToken cancellationToken = default)
     {
-        var user = await userRepository.GetByEmailAsync(command.Email, cancellationToken)
+        var email = command.Email.ToLowerInvariant();
+        var user = await userRepository.GetByEmailAsync(email, cancellationToken)
             ?? throw new InvalidCredentialsException();
 
         if (!BCrypt.Net.BCrypt.Verify(command.Password, user.PasswordHash))

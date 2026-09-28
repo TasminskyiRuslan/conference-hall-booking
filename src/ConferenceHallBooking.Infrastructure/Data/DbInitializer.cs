@@ -117,14 +117,14 @@ public class DbInitializer(
             return;
         }
 
-        var normalizedEmail = email.ToLower();
+        var normalizedEmail = email.ToLowerInvariant();
         if (await context.Users.AnyAsync(u => u.Email.ToLower() == normalizedEmail, cancellationToken))
         {
             return;
         }
 
         var passwordHash = BCrypt.Net.BCrypt.HashPassword(password);
-        var admin = new User(email, passwordHash, "Administrator", UserRole.Admin);
+        var admin = new User(normalizedEmail, passwordHash, "Administrator", UserRole.Admin);
 
         context.Users.Add(admin);
         await context.SaveChangesAsync(cancellationToken);

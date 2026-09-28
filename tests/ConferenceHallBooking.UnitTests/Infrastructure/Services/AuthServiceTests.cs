@@ -120,6 +120,22 @@ public class AuthServiceTests
     }
 
     [Fact]
+    public async Task LoginAsync_WhenEmailDiffersOnlyInCase_ShouldLookupNormalizedEmail()
+    {
+        var passwordHash = BCrypt.Net.BCrypt.HashPassword("correctPassword");
+        var user = new User("test@email.com", passwordHash, "John Doe");
+        _userRepository.GetByEmailAsync("test@email.com", Arg.Any<CancellationToken>())
+            .Returns(user);
+
+        var result = await CreateService().LoginAsync(
+            new LoginCommand("Test@Email.COM", "correctPassword"));
+
+        result.UserId.Should().Be(user.Id);
+        await _userRepository.Received(1)
+            .GetByEmailAsync("test@email.com", Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
     public async Task LoginAsync_ShouldReturnUserRole()
     {
         var passwordHash = BCrypt.Net.BCrypt.HashPassword("pass");
