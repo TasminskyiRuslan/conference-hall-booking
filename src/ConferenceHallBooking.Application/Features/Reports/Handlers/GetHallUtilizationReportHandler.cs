@@ -43,6 +43,7 @@ public class GetHallUtilizationReportHandler(IHallRepository hallRepository)
                 utilizationPercent);
         })
         .OrderByDescending(h => h.UtilizationPercent)
+        .ThenBy(h => h.HallName)
         .ToList();
 
         return new HallUtilizationReport(request.From, request.To, hallUtilizations);

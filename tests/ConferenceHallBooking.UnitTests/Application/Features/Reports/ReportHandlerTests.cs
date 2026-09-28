@@ -256,6 +256,29 @@ public class ReportHandlerTests
         report.AverageBookingDurationHours.Should().Be(0.13m);
     }
 
+    [Fact]
+    public async Task GetRevenueReportHandler_WithEqualRevenue_ShouldOrderByHallName()
+    {
+        var alpha = new Hall("Alpha", 50, 1000m);
+        var beta = new Hall("Beta", 50, 1000m);
+        var from = new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero);
+        var to = new DateTimeOffset(2026, 2, 1, 0, 0, 0, TimeSpan.Zero);
+
+        var bookings = new List<Booking>
+        {
+            NewBooking(beta, from.AddDays(1), from.AddDays(1).AddHours(1), 500m),
+            NewBooking(alpha, from.AddDays(2), from.AddDays(2).AddHours(1), 500m)
+        };
+        _bookingRepository.GetByDateRangeAsync(from, to, Arg.Any<CancellationToken>())
+            .Returns(bookings);
+
+        var report = await _revenueHandler.Handle(
+            new GetRevenueReportQuery(from, to), CancellationToken.None);
+
+        report.ByHall.Select(h => h.HallName).Should().Equal("Alpha", "Beta");
+        report.TotalRevenue.Should().Be(report.ByHall.Sum(h => h.Revenue));
+    }
+
     #endregion
 
     private static User NewUser() => new("tester@example.com", "fake-hash", "Tester");

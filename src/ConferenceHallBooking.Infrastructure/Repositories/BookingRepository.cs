@@ -52,6 +52,8 @@ public class BookingRepository(AppDbContext context) : IBookingRepository
             .Include(b => b.BookingOptions)
                 .ThenInclude(bo => bo.Option)
             .Where(b => b.StartTime < to && b.EndTime > from)
+            .OrderBy(b => b.StartTime)
+            .ThenBy(b => b.Id)
             .ToListAsync(cancellationToken);
     }
 

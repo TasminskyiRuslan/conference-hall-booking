@@ -117,4 +117,19 @@ public class HallRepositoryTests : IDisposable
 
         result.Should().BeFalse();
     }
+
+    [Fact]
+    public async Task GetAvailableHallsAsync_WithMultipleHalls_ShouldOrderByNameThenId()
+    {
+        _context.Halls.Add(CreateHall("Zulu"));
+        _context.Halls.Add(CreateHall("Alpha"));
+        await _context.SaveChangesAsync();
+
+        var result = await _repository.GetAvailableHallsAsync(
+            DateTimeOffset.UtcNow.AddDays(1),
+            DateTimeOffset.UtcNow.AddDays(2),
+            0);
+
+        result.Select(h => h.Name).Should().Equal("Alpha", "Zulu");
+    }
 }

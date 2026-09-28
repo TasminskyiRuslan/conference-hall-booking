@@ -23,6 +23,9 @@ public static class ReportCalculations
             return 0;
         }
 
-        return booking.TotalPrice * overlapHours / totalHours;
+        return Math.Round(
+            booking.TotalPrice * overlapHours / totalHours,
+            2,
+            MidpointRounding.AwayFromZero);
     }
 }

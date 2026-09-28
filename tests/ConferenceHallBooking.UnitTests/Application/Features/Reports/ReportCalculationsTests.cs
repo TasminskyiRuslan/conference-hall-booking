@@ -74,6 +74,21 @@ public class ReportCalculationsTests
         result.Should().Be(0m);
     }
 
+    [Fact]
+    public void ProportionalRevenue_WithFractionalShare_ShouldRoundToTwoDecimals()
+    {
+        var booking = NewBooking(
+            new DateTimeOffset(2026, 1, 12, 0, 0, 0, TimeSpan.Zero),
+            new DateTimeOffset(2026, 1, 12, 3, 0, 0, TimeSpan.Zero),
+            1000m);
+        var from = new DateTimeOffset(2026, 1, 12, 0, 0, 0, TimeSpan.Zero);
+        var to = new DateTimeOffset(2026, 1, 12, 1, 0, 0, TimeSpan.Zero);
+
+        var result = ReportCalculations.ProportionalRevenue(booking, from, to);
+
+        result.Should().Be(333.33m);
+    }
+
     private static Booking NewBooking(DateTimeOffset start, DateTimeOffset end, decimal price)
     {
         var hall = new Hall("Hall A", 50, 1000m);

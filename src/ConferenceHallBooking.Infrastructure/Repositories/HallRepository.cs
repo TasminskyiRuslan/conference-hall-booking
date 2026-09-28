@@ -38,6 +38,8 @@ public class HallRepository(AppDbContext context) : IHallRepository
             .Where(h => h.Capacity >= capacity && !bookedHallIds.Contains(h.Id))
             .Include(h => h.HallOptions)
                 .ThenInclude(ho => ho.Option)
+            .OrderBy(h => h.Name)
+            .ThenBy(h => h.Id)
             .ToListAsync(cancellationToken);
     }
 
@@ -50,6 +52,8 @@ public class HallRepository(AppDbContext context) : IHallRepository
         return await context.Halls
             .AsNoTracking()
             .Include(h => h.Bookings.Where(b => b.StartTime < to && b.EndTime > from))
+            .OrderBy(h => h.Name)
+            .ThenBy(h => h.Id)
             .ToListAsync(cancellationToken);
     }
 

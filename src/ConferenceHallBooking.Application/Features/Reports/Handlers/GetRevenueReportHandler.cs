@@ -28,6 +28,7 @@ public class GetRevenueReportHandler(IBookingRepository bookingRepository)
                 g.Count(),
                 g.Sum(b => ReportCalculations.ProportionalRevenue(b, request.From, request.To))))
             .OrderByDescending(h => h.Revenue)
+            .ThenBy(h => h.HallName)
             .ToList();
 
         return new RevenueReport(request.From, request.To, totalRevenue, byHall);

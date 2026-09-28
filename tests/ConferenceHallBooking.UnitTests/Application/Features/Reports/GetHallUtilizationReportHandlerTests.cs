@@ -141,4 +141,21 @@ public class GetHallUtilizationReportHandlerTests : IDisposable
         _context.Bookings.Add(new Booking(hall, user, start, end, price, price));
         _context.SaveChanges();
     }
+
+    [Fact]
+    public async Task GetUtilizationReportHandler_WithEqualUtilization_ShouldOrderByHallName()
+    {
+        var zulu = SeedHall("Zulu", 50, 1000m);
+        var alpha = SeedHall("Alpha", 50, 1000m);
+        var from = new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero);
+        var to = new DateTimeOffset(2026, 1, 8, 0, 0, 0, TimeSpan.Zero);
+
+        SeedBooking(zulu, from.AddDays(1), from.AddDays(2), 1000m);
+        SeedBooking(alpha, from.AddDays(1), from.AddDays(2), 1000m);
+
+        var report = await _utilizationHandler.Handle(
+            new GetHallUtilizationReportQuery(from, to), CancellationToken.None);
+
+        report.Halls.Select(h => h.HallName).Should().Equal("Alpha", "Zulu");
+    }
 }
