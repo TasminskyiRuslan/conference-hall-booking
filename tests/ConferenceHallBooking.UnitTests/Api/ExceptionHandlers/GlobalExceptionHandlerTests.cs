@@ -239,18 +239,6 @@ public class GlobalExceptionHandlerTests
     }
 
     [Fact]
-    public async Task TryHandleAsync_WithBookingAccessException_ShouldReturn403()
-    {
-        var context = CreateHttpContext();
-        var exception = new BookingAccessException();
-
-        var result = await _sut.TryHandleAsync(context, exception, CancellationToken.None);
-
-        result.Should().BeTrue();
-        context.Response.StatusCode.Should().Be(403);
-    }
-
-    [Fact]
     public async Task TryHandleAsync_WithBookingOverlapException_ShouldReturn409WithErrorCode()
     {
         var context = CreateHttpContext();

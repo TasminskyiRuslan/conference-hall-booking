@@ -333,7 +333,7 @@ public class BookingHandlerTests
     }
 
     [Fact]
-    public async Task GetBookingById_WhenBookedByAnotherUserAndRoleCustomer_ShouldThrowBookingAccessException()
+    public async Task GetBookingById_WhenBookedByAnotherUserAndRoleCustomer_ShouldThrowNotFoundException()
     {
         var handler = new GetBookingByIdQueryHandler(_bookingRepository, _userRepository);
 
@@ -351,7 +351,7 @@ public class BookingHandlerTests
         var act = () => handler.Handle(
             new GetBookingByIdQuery(booking.Id, stranger.Id), CancellationToken.None);
 
-        await act.Should().ThrowAsync<BookingAccessException>();
+        await act.Should().ThrowAsync<NotFoundException<Booking>>();
     }
 
     [Fact]
@@ -379,7 +379,7 @@ public class BookingHandlerTests
     }
 
     [Fact]
-    public async Task GetBookingById_WhenCurrentUserNotFoundInDb_ShouldThrowBookingAccessException()
+    public async Task GetBookingById_WhenCurrentUserNotFoundInDb_ShouldThrowNotFoundException()
     {
         var handler = new GetBookingByIdQueryHandler(_bookingRepository, _userRepository);
 
@@ -397,7 +397,7 @@ public class BookingHandlerTests
         var act = () => handler.Handle(
             new GetBookingByIdQuery(booking.Id, strangerId), CancellationToken.None);
 
-        await act.Should().ThrowAsync<BookingAccessException>();
+        await act.Should().ThrowAsync<NotFoundException<Booking>>();
     }
 
     #endregion

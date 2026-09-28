@@ -123,7 +123,7 @@ Totals: **251 tests** = 249 unit + 2 live.
 | POST | `/api/hall` | Admin | |
 | PUT | `/api/hall/{id}` | Admin | 409 when removing options used by bookings |
 | DELETE | `/api/hall/{id}` | Admin | 409 when the hall has bookings |
-| GET | `/api/booking/{id}` | Bearer | owner or Admin; 403 otherwise |
+| GET | `/api/booking/{id}` | Bearer | owner or Admin; 404 otherwise |
 | POST | `/api/booking` | Bearer | 409 on overlap; 400 on invalid input |
 | GET | `/api/report/revenue?from&to` | Admin | revenue breakdown by hall |
 | GET | `/api/report/utilization?from&to` | Admin | booked vs available hours |

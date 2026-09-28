@@ -11,13 +11,13 @@ namespace ConferenceHallBooking.Application.Features.Bookings.Handlers;
 
 /// <summary>
 /// Handler for GetBookingByIdQuery. Access is limited to the booking owner
-/// and admins; denial throws a generic error to avoid leaking booking existence.
+/// and admins; anyone else gets 404 so booking existence is not disclosed.
 /// </summary>
 public class GetBookingByIdQueryHandler(
     IBookingRepository bookingRepository,
     IUserRepository userRepository) : IRequestHandler<GetBookingByIdQuery, BookingResponse>
 {
-    /// <summary>Returns a booking to its owner or to an administrator.</summary>
+    /// <summary>Returns a booking to its owner or to an administrator; otherwise 404.</summary>
     public async Task<BookingResponse> Handle(GetBookingByIdQuery request, CancellationToken cancellationToken)
     {
         var booking = await bookingRepository.GetByIdAsync(request.Id, cancellationToken)
@@ -29,7 +29,7 @@ public class GetBookingByIdQueryHandler(
 
             if (currentUser?.Role != UserRole.Admin)
             {
-                throw new BookingAccessException();
+                throw new NotFoundException<Booking>(request.Id.ToString());
             }
         }
 

@@ -72,13 +72,6 @@ public class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logger) : IE
                 traceId,
                 [("errorCode", credentialsEx.ErrorCode)]),
 
-            BookingAccessException accessEx => CreateProblemDetails(
-                StatusCodes.Status403Forbidden,
-                "Forbidden",
-                accessEx.Message,
-                traceId,
-                [("errorCode", accessEx.ErrorCode)]),
-
             HallAlreadyBookedException bookedEx => CreateProblemDetails(
                 StatusCodes.Status409Conflict,
                 "Conflict",
