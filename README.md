@@ -45,9 +45,10 @@ docker compose run --rm api --migrate    # apply migrations + seed, then exits
 ```
 
 Open `http://localhost:8080` - health at `/health` (`Healthy` once migrated).
-Swagger UI at `/swagger` is served only in the `Development` environment
-(the local run profile; the Docker image runs `Production` without it).
-(`Healthy` once migrated).
+Swagger UI at `/swagger` is served only in the `Development` environment - the local
+run profile has it; Docker defaults to `Production` (no Swagger). To expose Swagger on
+port 8080 too, set `ASPNETCORE_ENVIRONMENT=Development` in `.env` and run
+`docker compose up -d api`.
 
 Migrations are never applied automatically; `--migrate` is the single migration entry
 point (Docker and local runs alike).
@@ -103,9 +104,9 @@ Totals: **269 tests** = 266 unit + 3 live.
 | `RateLimiting:Enabled` | — | `true` |
 | `Cors:AllowedOrigins` | — | empty — cross-origin requests are denied; list origins to allow them |
 | `PricingSettings:Rules` | — | `×0.90` 06:00–09:00, `×1.15` 12:00–14:00, `×0.80` 18:00–23:00 |
-| `PricingSettings:TimeZoneId` | вЂ” | `Europe/Kyiv` вЂ” tariff windows and multipliers are evaluated in this timezone |
+| `PricingSettings:TimeZoneId` | — | `Europe/Kyiv` — tariff windows and multipliers are evaluated in this timezone |
 | — | `POSTGRES_PORT` / `API_PORT` | `5433` / `8080` (compose) |
-| — | `ASPNETCORE_ENVIRONMENT` | `Production` (compose) |
+| — | `ASPNETCORE_ENVIRONMENT` | `Production` (compose default; set `Development` in `.env` to enable Swagger on port 8080) |
 | — | `POSTGRES_TEST_CONNECTION` | unset — live tests run as a no-op (they pass without a database) |
 
 > **Reverse proxy:** ForwardedHeaders middleware is intentionally not enabled, so the
@@ -152,7 +153,7 @@ Totals: **269 tests** = 266 unit + 3 live.
 | GET | `/api/report/summary?from&to` | Admin | totals and popular time slots |
 
 Errors follow RFC 7807 (`application/problem+json`) with stable machine-readable codes
-(`HALL_ALREADY_BOOKED`, `HALL_OPTION_IN_USE`, `UNIQUE_CONSTRAINT_VIOLATION`, …) and a
+(`HALL_ALREADY_BOOKED`, `HALL_OPTION_IN_USE`, `UNIQUE_CONSTRAINT_VIOLATION`, `FOREIGN_KEY_VIOLATION`, …) and a
 `traceId`.
 
 ## Seed Data
