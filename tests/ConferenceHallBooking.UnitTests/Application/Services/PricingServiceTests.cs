@@ -1,9 +1,12 @@
+using ConferenceHallBooking.Application.Configuration;
 using ConferenceHallBooking.Application.Services.Bookings;
 using ConferenceHallBooking.Domain.Entities;
 using ConferenceHallBooking.Domain.Exceptions;
 using ConferenceHallBooking.Domain.Interfaces;
 using FluentAssertions;
+using Microsoft.Extensions.Options;
 using NSubstitute;
+using System.Text.Json;
 
 namespace ConferenceHallBooking.UnitTests.Application.Services;
 
@@ -21,7 +24,9 @@ public class PricingServiceTests
         repository.GetOrderedAsync(Arg.Any<CancellationToken>())
             .Returns(domainRules);
 
-        return new PricingService(repository);
+        return new PricingService(
+            repository,
+            Options.Create(new PricingSettings { TimeZoneId = "Europe/Kyiv" }));
     }
 
     private sealed record PricingRuleConfiguration(TimeOnly StartTime, TimeOnly EndTime, decimal Multiplier);
@@ -212,5 +217,81 @@ public class PricingServiceTests
         var result = await service.CalculatePriceAsync(100m, null, Date(1, 23), Date(2, 1));
 
         result.HallCost.Should().Be(200m);
+    }
+
+    [Fact]
+    public async Task CalculatePrice_WithSeedRules_ShouldMatchTariffBoundaries()
+    {
+        var service = CreateService(
+            Rule(6, 0, 9, 0, 0.9m),
+            Rule(12, 0, 14, 0, 1.15m),
+            Rule(18, 0, 23, 0, 0.8m));
+
+        (await service.CalculatePriceAsync(1000m, null, Date(1, 6), Date(1, 9))).HallCost.Should().Be(2700m);
+        (await service.CalculatePriceAsync(1000m, null, Date(1, 9), Date(1, 12))).HallCost.Should().Be(3000m);
+        (await service.CalculatePriceAsync(1000m, null, Date(1, 12), Date(1, 14))).HallCost.Should().Be(2300m);
+        (await service.CalculatePriceAsync(1000m, null, Date(1, 14), Date(1, 18))).HallCost.Should().Be(4000m);
+        (await service.CalculatePriceAsync(1000m, null, Date(1, 18), Date(1, 23))).HallCost.Should().Be(4000m);
+        (await service.CalculatePriceAsync(1000m, null, Date(1, 23), Date(2, 0))).HallCost.Should().Be(1000m);
+    }
+
+    [Fact]
+    public async Task CalculatePrice_WhenSegmentSpansRuleBoundary_ShouldSplitAndApplyBothMultipliers()
+    {
+        var service = CreateService(
+            Rule(6, 0, 9, 0, 0.9m),
+            Rule(12, 0, 14, 0, 1.15m),
+            Rule(18, 0, 23, 0, 0.8m));
+
+        var result = await service.CalculatePriceAsync(1000m, null, Date(1, 11, 30), Date(1, 14, 30));
+
+        result.HallCost.Should().Be(3300m);
+    }
+
+    [Fact]
+    public async Task CalculatePrice_SameInstantInDifferentOffsets_ShouldProduceSamePrice()
+    {
+        var service = CreateService(Rule(18, 0, 23, 0, 0.8m));
+
+        var utcStart = new DateTimeOffset(2024, 7, 15, 15, 0, 0, TimeSpan.Zero);
+        var kyivStart = new DateTimeOffset(2024, 7, 15, 18, 0, 0, TimeSpan.FromHours(3));
+        var westStart = new DateTimeOffset(2024, 7, 15, 11, 0, 0, TimeSpan.FromHours(-4));
+
+        var utcPrice = await service.CalculatePriceAsync(1000m, null, utcStart, utcStart.AddHours(5));
+        var kyivPrice = await service.CalculatePriceAsync(1000m, null, kyivStart, kyivStart.AddHours(5));
+        var westPrice = await service.CalculatePriceAsync(1000m, null, westStart, westStart.AddHours(5));
+
+        utcPrice.TotalCost.Should().Be(4000m);
+        kyivPrice.TotalCost.Should().Be(4000m);
+        westPrice.TotalCost.Should().Be(4000m);
+    }
+
+    [Fact]
+    public void AppSettings_ShouldDeclarePricingRulesAndBusinessTimeZone()
+    {
+        DirectoryInfo? directory = new DirectoryInfo(AppContext.BaseDirectory);
+        while (directory is not null && !File.Exists(Path.Combine(directory.FullName, "ConferenceHallBooking.slnx")))
+        {
+            directory = directory.Parent;
+        }
+
+        directory.Should().NotBeNull("the repository root must be reachable from the test output");
+        var appsettingsPath = Path.Combine(directory!.FullName, "src", "ConferenceHallBooking.Api", "appsettings.json");
+        using var document = JsonDocument.Parse(File.ReadAllText(appsettingsPath));
+
+        var pricing = document.RootElement.GetProperty("PricingSettings");
+        pricing.GetProperty("TimeZoneId").GetString().Should().Be("Europe/Kyiv");
+
+        var rules = pricing.GetProperty("Rules");
+        rules.GetArrayLength().Should().Be(3);
+        rules[0].GetProperty("StartTime").GetString().Should().Be("06:00:00");
+        rules[0].GetProperty("EndTime").GetString().Should().Be("09:00:00");
+        rules[0].GetProperty("Multiplier").GetDecimal().Should().Be(0.9m);
+        rules[1].GetProperty("StartTime").GetString().Should().Be("12:00:00");
+        rules[1].GetProperty("EndTime").GetString().Should().Be("14:00:00");
+        rules[1].GetProperty("Multiplier").GetDecimal().Should().Be(1.15m);
+        rules[2].GetProperty("StartTime").GetString().Should().Be("18:00:00");
+        rules[2].GetProperty("EndTime").GetString().Should().Be("23:00:00");
+        rules[2].GetProperty("Multiplier").GetDecimal().Should().Be(0.8m);
     }
 }

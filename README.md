@@ -101,6 +101,7 @@ Totals: **252 tests** = 249 unit + 3 live.
 | `RateLimiting:Enabled` | — | `true` |
 | `Cors:AllowedOrigins` | — | empty — cross-origin requests are denied; list origins to allow them |
 | `PricingSettings:Rules` | — | `×0.90` 06:00–09:00, `×1.15` 12:00–14:00, `×0.80` 18:00–23:00 |
+| `PricingSettings:TimeZoneId` | вЂ” | `Europe/Kyiv` вЂ” tariff windows and multipliers are evaluated in this timezone |
 | — | `POSTGRES_PORT` / `API_PORT` | `5433` / `8080` (compose) |
 | — | `ASPNETCORE_ENVIRONMENT` | `Production` (compose) |
 | — | `POSTGRES_TEST_CONNECTION` | unset — live tests are skipped |
@@ -121,7 +122,7 @@ Totals: **252 tests** = 249 unit + 3 live.
 | Protect accounts | JWT (60 min) + BCrypt; register/login rate-limited per client IP → 429 + `Retry-After` |
 | Grant capabilities by role | Admin-only endpoints guarded by role authorization → 403 |
 | Keep bookings private | owner-or-Admin access; anyone else gets 404 so existence is not disclosed |
-| Price bookings by time of day | `PricingSettings:Rules` window multipliers applied by `PricingService` |
+| Price bookings by time of day | `PricingSettings:Rules` window multipliers applied by `PricingService` in the `PricingSettings:TimeZoneId` time zone (Europe/Kyiv) |
 | Report on hall usage | Admin reports: revenue, utilization, summary for a period |
 
 ## API Endpoints

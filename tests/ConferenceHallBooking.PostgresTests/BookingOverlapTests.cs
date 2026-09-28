@@ -1,3 +1,4 @@
+using ConferenceHallBooking.Application.Configuration;
 using ConferenceHallBooking.Application.Features.Bookings.Commands;
 using ConferenceHallBooking.Application.Features.Bookings.Handlers;
 using ConferenceHallBooking.Application.Services.Bookings;
@@ -7,6 +8,7 @@ using ConferenceHallBooking.Infrastructure.Data;
 using ConferenceHallBooking.Infrastructure.Repositories;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using Npgsql;
 
 namespace ConferenceHallBooking.PostgresTests;
@@ -120,7 +122,7 @@ public class BookingOverlapTests
                         new HallRepository(context),
                         new OptionRepository(context),
                         new UserRepository(context),
-                        new PricingService(new PricingRuleRepository(context)),
+                        new PricingService(new PricingRuleRepository(context), Options.Create(new PricingSettings { TimeZoneId = "Europe/Kyiv" })),
                         new UnitOfWork(context));
 
                     var command = new CreateBookingCommand(hallId, userId, SlotStart, 2m, null);
@@ -187,7 +189,7 @@ public class BookingOverlapTests
                 new HallRepository(context),
                 new OptionRepository(context),
                 new UserRepository(context),
-                new PricingService(new PricingRuleRepository(context)),
+                new PricingService(new PricingRuleRepository(context), Options.Create(new PricingSettings { TimeZoneId = "Europe/Kyiv" })),
                 new UnitOfWork(context));
 
             var first = new CreateBookingCommand(hallId, userId, SlotStart, 2m, null);

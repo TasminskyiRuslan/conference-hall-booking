@@ -32,6 +32,12 @@ var secretKey = !string.IsNullOrWhiteSpace(jwtSettings.SecretKey)
 
 builder.Services.PostConfigure<JwtSettings>(settings => settings.SecretKey = secretKey);
 
+var pricingSettings = builder.Configuration
+    .GetSection(PricingSettings.SectionName).Get<PricingSettings>() ?? new PricingSettings();
+TimeZoneInfo.FindSystemTimeZoneById(pricingSettings.TimeZoneId);
+builder.Services.Configure<PricingSettings>(
+    builder.Configuration.GetSection(PricingSettings.SectionName));
+
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
