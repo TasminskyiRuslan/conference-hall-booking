@@ -24,7 +24,7 @@ REST API for managing conference hall bookings — .NET 8, Clean Architecture, C
 | `src/ConferenceHallBooking.Domain` | entities, invariants, domain exceptions |
 | `src/ConferenceHallBooking.Infrastructure` | EF Core 8 + Npgsql, repositories, unit of work, JWT/BCrypt services, migrations, seed |
 | `tests/ConferenceHallBooking.UnitTests` | hermetic xUnit suite (InMemory, NSubstitute) — 249 tests |
-| `tests/ConferenceHallBooking.PostgresTests` | live-PostgreSQL overlap and concurrency tests (2 tests, gated by `POSTGRES_TEST_CONNECTION`) |
+| `tests/ConferenceHallBooking.PostgresTests` | live-PostgreSQL overlap and concurrency tests (3 tests, gated by `POSTGRES_TEST_CONNECTION`) |
 
 ## Getting Started
 
@@ -38,6 +38,8 @@ Docker with Compose, **or** .NET SDK 10.x (the solution is a `.slnx`; projects t
 git clone https://github.com/TasminskyiRuslan/conference-hall-booking.git
 cd conference-hall-booking
 cp .env.example .env
+# edit .env: set JWT_SECRET_KEY (required, e.g. `openssl rand -base64 48`),
+# optionally ADMIN_EMAIL + ADMIN_PASSWORD to seed an admin user
 docker compose up -d --build
 docker compose run --rm api --migrate    # apply migrations + seed, then exits
 ```
@@ -67,7 +69,7 @@ The `Development` profile provides the JWT secret and admin credentials
 ### Run tests
 
 ```bash
-# full suite without a database (the 2 live tests no-op)
+# full suite without a database (the 3 live tests no-op)
 dotnet test ConferenceHallBooking.slnx
 ```
 
@@ -84,23 +86,23 @@ $env:POSTGRES_TEST_CONNECTION = 'Host=localhost;Port=5433;Database=conference_bo
 dotnet test ConferenceHallBooking.slnx
 ```
 
-Totals: **251 tests** = 249 unit + 2 live.
+Totals: **252 tests** = 249 unit + 3 live.
 
 ## Configuration
 
 | Key | Environment variable | Default |
 |---|---|---|
 | `ConnectionStrings:DefaultConnection` | `ConnectionStrings__DefaultConnection` | `Host=localhost;Port=5433;Database=conference_booking;Username=postgres;Password=postgres` (compose sets `Host=db`) |
-| `JwtSettings:SecretKey` | `JWT_SECRET_KEY` (fallback) | empty in `appsettings.json`; `Development` provides a dev key — production must set the variable |
+| `JwtSettings:SecretKey` | `JWT_SECRET_KEY` (fallback) | empty in `appsettings.json`; `Development` provides a dev key; compose requires the variable (startup fails without it) |
 | `JwtSettings:Issuer` / `Audience` | — | `ConferenceHallBooking` / `ConferenceHallBookingApp` |
 | `JwtSettings:ExpirationInMinutes` | — | `60` |
-| `AdminSeed:Email` / `Password` | `ADMIN_EMAIL` / `ADMIN_PASSWORD` (compose) | empty in `appsettings.json`; `Development` and compose default to `admin@conference.local` / `Admin@12345` |
+| `AdminSeed:Email` / `Password` | `ADMIN_EMAIL` / `ADMIN_PASSWORD` (compose) | empty in `appsettings.json`; `Development` defaults to `admin@conference.local` / `Admin@12345`; compose seeds only when both are set |
 | `RateLimiting:Auth:PermitLimit` / `WindowMinutes` | — | `10` / `15` (per client IP) |
 | `RateLimiting:Enabled` | — | `true` |
 | `Cors:AllowedOrigins` | — | empty — cross-origin requests are denied; list origins to allow them |
 | `PricingSettings:Rules` | — | `×0.90` 06:00–09:00, `×1.15` 12:00–14:00, `×0.80` 18:00–23:00 |
 | — | `POSTGRES_PORT` / `API_PORT` | `5433` / `8080` (compose) |
-| — | `ASPNETCORE_ENVIRONMENT` | `Development` (compose) |
+| — | `ASPNETCORE_ENVIRONMENT` | `Production` (compose) |
 | — | `POSTGRES_TEST_CONNECTION` | unset — live tests are skipped |
 
 ## Roles
@@ -109,6 +111,18 @@ Totals: **251 tests** = 249 unit + 2 live.
 |---|---|
 | Customer | search and view halls, create bookings, view own bookings |
 | Admin | all Customer capabilities, plus hall CRUD and all reports |
+
+## Business Tasks & Technical Solutions
+
+| Business task | Technical solution |
+|---|---|
+| Find a free hall for a time slot | `GET /api/hall/available` — SQL-side overlap check per hall, capacity filter |
+| Prevent double-booking | PostgreSQL `EXCLUDE USING gist` on `tstzrange` `[)` — back-to-back allowed, overlap → 409 |
+| Protect accounts | JWT (60 min) + BCrypt; register/login rate-limited per client IP → 429 + `Retry-After` |
+| Grant capabilities by role | Admin-only endpoints guarded by role authorization → 403 |
+| Keep bookings private | owner-or-Admin access; anyone else gets 404 so existence is not disclosed |
+| Price bookings by time of day | `PricingSettings:Rules` window multipliers applied by `PricingService` |
+| Report on hall usage | Admin reports: revenue, utilization, summary for a period |
 
 ## API Endpoints
 
@@ -143,7 +157,7 @@ idempotent):
 | Halls | `Зал А` (50 / 2000), `Зал B` (100 / 3500), `Зал C` (30 / 1500) — capacity / hourly rate |
 | Options, attached to every hall | `Проєктор` 500, `Wi-Fi` 300, `Звук` 700 |
 | Pricing rules | from `PricingSettings:Rules` (see Configuration) |
-| Admin user | from `AdminSeed` — defaults: `admin@conference.local` / `Admin@12345` |
+| Admin user | from `AdminSeed` — `Development`: `admin@conference.local` / `Admin@12345`; compose: only when `ADMIN_EMAIL` + `ADMIN_PASSWORD` are set |
 
 Customers are not seeded — register them via `POST /api/auth/register`.
 
