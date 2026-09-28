@@ -4,8 +4,8 @@ REST API for managing conference hall bookings — .NET 8, Clean Architecture, C
 
 ## Features
 
-- **JWT authentication** — register/login, 60-minute tokens; both auth endpoints share
-  a fixed window of **10 requests per 15 minutes** (429 on exceed).
+- **JWT authentication** — register/login, 60-minute tokens; each client IP gets
+  its own fixed window of **10 requests per 15 minutes** (429 on exceed).
 - **Hall management** — CRUD for Admins; availability search by time slot and capacity
   for any authenticated user.
 - **Race-safe bookings** — a PostgreSQL `EXCLUDE` constraint rejects overlaps
@@ -95,7 +95,7 @@ Totals: **251 tests** = 249 unit + 2 live.
 | `JwtSettings:Issuer` / `Audience` | — | `ConferenceHallBooking` / `ConferenceHallBookingApp` |
 | `JwtSettings:ExpirationInMinutes` | — | `60` |
 | `AdminSeed:Email` / `Password` | `ADMIN_EMAIL` / `ADMIN_PASSWORD` (compose) | empty in `appsettings.json`; `Development` and compose default to `admin@conference.local` / `Admin@12345` |
-| `RateLimiting:Auth:PermitLimit` / `WindowMinutes` | — | `10` / `15` (shared fixed window) |
+| `RateLimiting:Auth:PermitLimit` / `WindowMinutes` | — | `10` / `15` (per client IP) |
 | `RateLimiting:Enabled` | — | `true` |
 | `Cors:AllowedOrigins` | — | empty — cross-origin requests are denied; list origins to allow them |
 | `PricingSettings:Rules` | — | `×0.90` 06:00–09:00, `×1.15` 12:00–14:00, `×0.80` 18:00–23:00 |
