@@ -45,10 +45,10 @@ docker compose run --rm api --migrate    # apply migrations + seed, then exits
 ```
 
 Open `http://localhost:8080` - health at `/health` (`Healthy` once migrated).
-Swagger UI at `/swagger` is served only in the `Development` environment - the local
-run profile has it; Docker defaults to `Production` (no Swagger). To expose Swagger on
-port 8080 too, set `ASPNETCORE_ENVIRONMENT=Development` in `.env` and run
-`docker compose up -d api`.
+Swagger UI at `/swagger` is served only in the `Development` environment, and that is
+the default everywhere (local run profile and `.env.example`) - open
+`http://localhost:8080/swagger` after `docker compose up -d api`. Set
+`ASPNETCORE_ENVIRONMENT=Production` in `.env` to disable Swagger for deployments.
 
 Migrations are never applied automatically; `--migrate` is the single migration entry
 point (Docker and local runs alike).
@@ -106,7 +106,7 @@ Totals: **269 tests** = 266 unit + 3 live.
 | `PricingSettings:Rules` | — | `×0.90` 06:00–09:00, `×1.15` 12:00–14:00, `×0.80` 18:00–23:00 |
 | `PricingSettings:TimeZoneId` | — | `Europe/Kyiv` — tariff windows and multipliers are evaluated in this timezone |
 | — | `POSTGRES_PORT` / `API_PORT` | `5433` / `8080` (compose) |
-| — | `ASPNETCORE_ENVIRONMENT` | `Production` (compose default; set `Development` in `.env` to enable Swagger on port 8080) |
+| — | `ASPNETCORE_ENVIRONMENT` | `Development` (compose default and `.env.example`; set `Production` to disable Swagger) |
 | — | `POSTGRES_TEST_CONNECTION` | unset — live tests run as a no-op (they pass without a database) |
 
 > **Reverse proxy:** ForwardedHeaders middleware is intentionally not enabled, so the
