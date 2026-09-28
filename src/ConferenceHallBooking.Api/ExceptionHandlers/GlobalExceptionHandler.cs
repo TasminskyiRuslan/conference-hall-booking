@@ -19,12 +19,6 @@ public class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logger) : IE
     {
         var traceId = httpContext.TraceIdentifier;
 
-        // NOTE: switch-expression cases are evaluated in order. Specific
-        // subclasses of BusinessRuleException (ValidationException → 400,
-        // NotFoundException/OptionsNotFoundException → 404,
-        // InvalidEntityFieldException → 400, InvalidCredentialsException → 401)
-        // MUST appear before the generic BusinessRuleException → 409 arm,
-        // otherwise they will fall through to 409.
         var problemDetails = exception switch
         {
             ValidationException validationEx => CreateProblemDetails(
