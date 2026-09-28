@@ -116,7 +116,7 @@ Totals: **251 tests** = 249 unit + 2 live.
 |---|---|---|---|
 | GET | `/health` | — | returns `Healthy` |
 | GET | `/swagger` | — | Swagger UI (Development only) |
-| POST | `/api/auth/register` | — | rate-limited → 429 |
+| POST | `/api/auth/register` | — | → 201; rate-limited → 429 |
 | POST | `/api/auth/login` | — | rate-limited → 429 |
 | GET | `/api/hall/available?startTime&endTime&capacity` | Bearer | halls free for the slot |
 | GET | `/api/hall/{id}` | Bearer | |
