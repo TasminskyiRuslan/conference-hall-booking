@@ -6,8 +6,10 @@ using ConferenceHallBooking.Domain.Exceptions;
 using ConferenceHallBooking.Domain.Interfaces;
 using ConferenceHallBooking.Infrastructure.Services;
 using FluentAssertions;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using NSubstitute;
+using NSubstitute.ExceptionExtensions;
 
 namespace ConferenceHallBooking.UnitTests.Infrastructure.Services;
 
@@ -69,6 +71,22 @@ public class AuthServiceTests
         await _userRepository.Received(1).AddAsync(
             Arg.Is<User>(u => u.PasswordHash != "myPassword123" && u.PasswordHash.StartsWith("$2a$")),
             Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task RegisterAsync_WhenSaveHitsUniqueIndexRace_ShouldThrowEmailAlreadyExistsException()
+    {
+        _userRepository.ExistsByEmailAsync("race@email.com", Arg.Any<CancellationToken>())
+            .Returns(false);
+        _unitOfWork.SaveChangesAsync(Arg.Any<CancellationToken>())
+            .ThrowsAsync(new UniqueConstraintViolationException(
+                new DbUpdateException("An error occurred while saving the entity changes.")));
+
+        var act = async () => await CreateService().RegisterAsync(
+            new RegisterCommand("race@email.com", "password123", "password123", "Race"));
+
+        await act.Should().ThrowAsync<EmailAlreadyExistsException>()
+            .WithMessage("*already exists*");
     }
 
     #endregion

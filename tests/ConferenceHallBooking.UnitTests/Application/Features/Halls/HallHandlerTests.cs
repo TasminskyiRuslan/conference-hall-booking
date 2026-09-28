@@ -94,7 +94,7 @@ public class HallHandlerTests
     }
 
     [Fact]
-    public async Task CreateHall_WhenSaveHitsUniqueIndexRace_ShouldPropagateDbUpdateException()
+    public async Task CreateHall_WhenSaveHitsUniqueIndexRace_ShouldPropagateUniqueConstraintViolation()
     {
         var handler = new CreateHallCommandHandler(_hallRepository, _optionRepository, _unitOfWork);
         var command = new CreateHallCommand("Race Hall", 100, 250m, []);
@@ -103,11 +103,12 @@ public class HallHandlerTests
             .Returns(false);
 
         _unitOfWork.SaveChangesAsync(Arg.Any<CancellationToken>())
-            .ThrowsAsync(new DbUpdateException("An error occurred while saving the entity changes."));
+            .ThrowsAsync(new UniqueConstraintViolationException(
+                new DbUpdateException("An error occurred while saving the entity changes.")));
 
         var act = () => handler.Handle(command, CancellationToken.None);
 
-        await act.Should().ThrowAsync<DbUpdateException>();
+        await act.Should().ThrowAsync<UniqueConstraintViolationException>();
     }
 
     #endregion
