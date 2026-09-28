@@ -124,11 +124,12 @@ builder.Services.AddSwaggerGen(c =>
 
 var app = builder.Build();
 
-if (app.Configuration.GetValue("Database:AutoMigrateAndSeed", false))
+if (args.Contains("--migrate"))
 {
     using var scope = app.Services.CreateScope();
     var initializer = scope.ServiceProvider.GetRequiredService<IDbInitializer>();
     await initializer.SeedAsync();
+    return;
 }
 
 app.UseExceptionHandler();
