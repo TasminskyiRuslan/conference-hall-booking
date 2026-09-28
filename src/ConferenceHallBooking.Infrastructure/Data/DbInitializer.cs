@@ -25,10 +25,27 @@ public class DbInitializer(
             logger.LogInformation("Applying pending database migrations...");
             await context.Database.MigrateAsync(cancellationToken);
 
-            await SeedAdminAsync(cancellationToken);
-            await SeedPricingRulesAsync(cancellationToken);
-            await SeedHallsAndOptionsAsync(cancellationToken);
+            var adminSeeded = await SeedAdminAsync(cancellationToken);
+            var rulesSeeded = await SeedPricingRulesAsync(cancellationToken);
+            var hallsSeeded = await SeedHallsAndOptionsAsync(cancellationToken);
             await context.SaveChangesAsync(cancellationToken);
+
+            if (adminSeeded)
+            {
+                logger.LogInformation(
+                    "Admin user '{Email}' seeded successfully.",
+                    configuration[$"{AdminSeedSection}:Email"]);
+            }
+
+            if (rulesSeeded > 0)
+            {
+                logger.LogInformation("Seeded {Count} pricing rule(s) from configuration.", rulesSeeded);
+            }
+
+            if (hallsSeeded)
+            {
+                logger.LogInformation("Halls and options seeded successfully.");
+            }
         }
         catch (Exception ex)
         {
@@ -37,11 +54,11 @@ public class DbInitializer(
         }
     }
 
-    private async Task SeedPricingRulesAsync(CancellationToken cancellationToken)
+    private async Task<int> SeedPricingRulesAsync(CancellationToken cancellationToken)
     {
         if (await context.PricingRules.AnyAsync(cancellationToken))
         {
-            return;
+            return 0;
         }
 
         var seeds = configuration
@@ -53,7 +70,7 @@ public class DbInitializer(
             logger.LogWarning(
                 "No pricing rules found under {Section}. PricingRules table left empty; multipliers default to 1.0.",
                 "PricingSettings:Rules");
-            return;
+            return 0;
         }
 
         var rules = seeds
@@ -62,15 +79,15 @@ public class DbInitializer(
 
         await context.PricingRules.AddRangeAsync(rules, cancellationToken);
 
-        logger.LogInformation("Seeded {Count} pricing rule(s) from configuration.", rules.Count);
+        return rules.Count;
     }
 
-    private async Task SeedHallsAndOptionsAsync(CancellationToken cancellationToken)
+    private async Task<bool> SeedHallsAndOptionsAsync(CancellationToken cancellationToken)
     {
         if (await context.Halls.AnyAsync(cancellationToken))
         {
             logger.LogInformation("Database already seeded. Skipping halls and options.");
-            return;
+            return false;
         }
 
         logger.LogInformation("Seeding halls and options...");
@@ -98,10 +115,10 @@ public class DbInitializer(
         hallC.AddOption(wifi);
         hallC.AddOption(sound);
 
-        logger.LogInformation("Halls and options seeded successfully.");
+        return true;
     }
 
-    private async Task SeedAdminAsync(CancellationToken cancellationToken)
+    private async Task<bool> SeedAdminAsync(CancellationToken cancellationToken)
     {
         var email = configuration[$"{AdminSeedSection}:Email"];
         var password = configuration[$"{AdminSeedSection}:Password"];
@@ -112,13 +129,13 @@ public class DbInitializer(
                 "Admin user was not created. Provide {Section}:Email and {Section}:Password (e.g. via environment variables).",
                 AdminSeedSection,
                 AdminSeedSection);
-            return;
+            return false;
         }
 
         var normalizedEmail = email.ToLowerInvariant();
         if (await context.Users.AnyAsync(u => u.Email.ToLower() == normalizedEmail, cancellationToken))
         {
-            return;
+            return false;
         }
 
         var passwordHash = BCrypt.Net.BCrypt.HashPassword(password);
@@ -126,7 +143,7 @@ public class DbInitializer(
 
         context.Users.Add(admin);
 
-        logger.LogInformation("Admin user '{Email}' seeded successfully.", email);
+        return true;
     }
 
     private sealed record PricingRuleSeed(TimeOnly StartTime, TimeOnly EndTime, decimal Multiplier);
